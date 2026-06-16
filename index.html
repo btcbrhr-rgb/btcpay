@@ -78,7 +78,7 @@
     <!-- SIDEBAR OVERLAY FOR MOBILE -->
     <div id="sidebar-overlay" onclick="toggleSidebar()" class="hidden fixed inset-0 bg-slate-900/40 z-40 md:hidden"></div>
 
-    <!-- LOGIN SCREEN CONTAINER -->
+    <!-- LOGIN SCREEN CONTAINER (ระบบความปลอดภัยซ่อนการตั้งค่า API) -->
     <div id="login-screen" class="min-h-screen flex flex-col justify-center items-center bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 p-4 transition-all duration-300">
         <div class="w-full max-w-md bg-slate-900/80 backdrop-blur-md rounded-2xl border border-slate-800 p-8 shadow-2xl space-y-6">
             <div class="text-center space-y-2">
@@ -86,7 +86,7 @@
                     <i class="fa-solid fa-file-invoice-dollar text-3xl"></i>
                 </div>
                 <h2 class="text-xl font-bold text-white tracking-tight">ระบบตั้งเบิก & จ่ายเงินองค์กร</h2>
-                <p class="text-xs text-slate-400">เข้าใช้งานแบบเชื่อมต่อ Google Sheets โดยตรง</p>
+                <p class="text-xs text-slate-400">บูรพา โฮลดิ้งส์ จำกัด (BTC)</p>
             </div>
 
             <!-- LOGIN ERROR ALERT -->
@@ -102,7 +102,7 @@
                         <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-500">
                             <i class="fa-solid fa-user"></i>
                         </span>
-                        <input type="text" id="login-username" required class="w-full pl-9 pr-3 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all font-medium font-mono text-xs" placeholder="ป้อนชื่อผู้ใช้งาน (เช่น admin)">
+                        <input type="text" id="login-username" required class="w-full pl-9 pr-3 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all font-medium font-mono text-xs" placeholder="ป้อนชื่อผู้ใช้งาน">
                     </div>
                 </div>
 
@@ -123,12 +123,6 @@
                     <i class="fa-solid fa-right-to-bracket mr-1.5"></i> เข้าสู่ระบบอย่างปลอดภัย
                 </button>
             </form>
-
-            <div class="border-t border-slate-800 pt-4 text-center">
-                <button onclick="openConfigModal()" class="text-xs text-indigo-400 hover:text-indigo-300 font-bold inline-flex items-center gap-1.5">
-                    <i class="fa-solid fa-gears"></i> ตั้งค่าการเชื่อมต่อ Google Sheets API
-                </button>
-            </div>
         </div>
     </div>
 
@@ -144,14 +138,14 @@
                     </div>
                     <div>
                         <h1 class="text-sm font-bold tracking-tight text-white leading-tight">ระบบตั้งเบิก & จ่ายเงิน</h1>
-                        <p class="text-[10px] text-slate-400 font-medium" id="db-mode-badge">โหมดใช้งาน: Google Sheets DB</p>
+                        <p class="text-[10px] text-slate-400 font-medium" id="db-mode-badge">โหมดใช้งาน: Local Storage</p>
                     </div>
                 </div>
 
                 <nav class="mt-6 space-y-1.5">
                     <p class="text-[10px] uppercase font-bold text-slate-500 px-3 mb-2 tracking-wider">แผงควบคุมหลัก</p>
                     
-                    <button id="tab-dashboard-btn" onclick="switchTab('dashboard')" class="w-full text-left flex items-center gap-3 px-4 py-3 rounded-xl bg-indigo-600 text-white text-xs font-semibold transition-all">
+                    <button id="tab-dashboard-btn" onclick="switchTab('dashboard')" class="w-full text-left flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-900 hover:text-white text-xs font-medium transition-all">
                         <i class="fa-solid fa-chart-pie text-sm w-5 text-center"></i> แผงวิเคราะห์ (Dashboard)
                     </button>
 
@@ -172,9 +166,9 @@
                 </nav>
             </div>
 
-            <!-- SETTINGS & PROFILE -->
+            <!-- SETTINGS & PROFILE (เข้าถึงได้เฉพาะสิทธิ์เจ้าหน้าที่การเงินเท่านั้น) -->
             <div class="p-4 border-t border-slate-900 bg-slate-950">
-                <button onclick="openConfigModal()" class="w-full mb-3 bg-slate-900 hover:bg-slate-850 text-slate-300 border border-slate-800 text-[10px] py-2 rounded-lg flex items-center justify-center gap-1.5 transition-all">
+                <button id="sidebar-config-btn" onclick="openConfigModal()" class="hidden w-full mb-3 bg-slate-900 hover:bg-slate-850 text-slate-300 border border-slate-800 text-[10px] py-2 rounded-lg flex items-center justify-center gap-1.5 transition-all">
                     <i class="fa-solid fa-cloud-arrow-up text-indigo-400"></i> ตั้งค่าระบบ Google Sheets
                 </button>
 
@@ -232,7 +226,7 @@
                 <!-- SECURITY STATUS BANNER -->
                 <div id="permission-banner" class="mb-6 p-4 rounded-xl border flex items-center justify-between gap-4 transition-all duration-300"></div>
 
-                <!-- LOADING SPINNER -->
+                <!-- LOADING SPINNER (แสดงระหว่างรอฐานข้อมูลออนไลน์) -->
                 <div id="main-loading-spinner" class="hidden flex-col justify-center items-center py-20 space-y-4">
                     <svg class="animate-spin h-10 w-10 text-indigo-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -730,7 +724,7 @@
         </div>
     </div>
 
-    <!-- CONFIGURATION GOOGLE SHEETS API MODAL -->
+    <!-- CONFIGURATION GOOGLE SHEETS API MODAL (ซ่อนสำหรับคนนอกระบบ) -->
     <div id="config-modal" class="hidden fixed inset-0 z-50 bg-slate-950/60 flex items-center justify-center p-4 backdrop-blur-sm">
         <div class="bg-white rounded-2xl border border-slate-200 shadow-xl w-full max-w-lg p-6 space-y-4 text-xs sm:text-sm">
             <div class="flex justify-between items-center border-b pb-3">
@@ -741,7 +735,7 @@
                 <div>
                     <label class="block text-xs font-semibold text-slate-600 mb-1">Google Apps Script Web App URL</label>
                     <input type="text" id="config-api-url" class="w-full p-2.5 border rounded-lg focus:ring-2 focus:ring-indigo-500/20 text-xs font-mono" placeholder="https://script.google.com/macros/s/xxxx/exec">
-                    <p class="text-[10px] text-slate-400 mt-1">ปล่อยว่างไว้เพื่อเปลี่ยนไปใช้ฐานข้อมูลสำลองจำลองภายในเครื่องเบราว์เซอร์ (Local Storage)</p>
+                    <p class="text-[10px] text-slate-400 mt-1">ปล่อยว่างไว้เพื่อเปลี่ยนไปใช้ฐานข้อมูลสำรองภายในเครื่องเบราว์เซอร์ (Local Storage)</p>
                 </div>
             </div>
             <div class="bg-slate-50 p-3 rounded-lg border flex flex-col space-y-2">
@@ -836,20 +830,13 @@
         let currentUser = null;
         let currentTodoScope = 'all';
 
-        // Google Sheets API Web App URL ที่เชื่อมต่อกับหลังบ้านโดยตรงตามที่คุณป้อนมา
-        let GAS_API_URL = "https://script.google.com/macros/s/AKfycbyhDhCXZRLq6ifwJ8JjE81PD2HkJ31VKdAylI7wYYJpuOChcglbEVdhrInhbriKT2p8/exec";
+        // Google Sheets API Web App URL ตัวเริ่มต้น
+        let GAS_API_URL = localStorage.getItem("gas_api_url") || "https://script.google.com/macros/s/AKfycbyhDhCXZRLq6ifwJ8JjE81PD2HkJ31VKdAylI7wYYJpuOChcglbEVdhrInhbriKT2p8/exec";
 
-        // รายชื่อจำลองตั้งต้นระบบเมื่อยังไม่ได้เชื่อมต่อ Google Sheets (เหลือเพียง แอดมินเริ่มต้นเพื่อใช้สร้างฐานข้อมูลจริง)
+        // รายชื่อจำลองตั้งต้นระบบเมื่อยังไม่ได้เชื่อมต่อ Google Sheets
         const defaultUsers = [
-            { id: "usr-1", name: "ผู้ดูแลระบบการเงิน", username: "admin", password: "admin123", role: "เจ้าหน้าที่การเงิน", email: "admin@company.com" }
+            { id: "usr-1", name: "ผู้ดูแลระบบ การเงิน", username: "admin", password: "admin123", role: "เจ้าหน้าที่การเงิน", email: "admin@company.com" }
         ];
-
-        const defaultPayees = [];
-        const defaultPaymentTypes = [];
-        const defaultProjects = [];
-        const defaultExpenseTypes = [];
-        const defaultCompanies = [];
-        const defaultCompanyAccounts = [];
 
         window.onload = function () {
             // ตั้งค่าวันที่จำลองปัจจุบัน
@@ -880,7 +867,7 @@
                     const result = await response.json();
                     
                     if (result.status === "success") {
-                        systemUsers = result.users.length > 0 ? result.users : [...defaultUsers];
+                        systemUsers = result.users;
                         options_payees = result.payees;
                         options_paymentTypes = result.paymentTypes;
                         options_projects = result.projects;
@@ -905,7 +892,7 @@
                 loadLocalStorageFallback();
             }
 
-            // แสดงหน้าจอหลักหรือหน้าล็อกอิน
+            // ตรวจสอบเซสชันผู้ใช้งานเดิม
             const savedSession = localStorage.getItem('current_logged_in_user');
             if (savedSession) {
                 try {
@@ -922,19 +909,18 @@
         // ทำการ Fallback ไปยังหน่วยความจำจำลองของเบราว์เซอร์
         function loadLocalStorageFallback() {
             systemUsers = JSON.parse(localStorage.getItem('system_users')) || [...defaultUsers];
-            options_payees = JSON.parse(localStorage.getItem('options_payees')) || [...defaultPayees];
-            options_paymentTypes = JSON.parse(localStorage.getItem('options_payment_types')) || [...defaultPaymentTypes];
-            options_projects = JSON.parse(localStorage.getItem('options_projects')) || [...defaultProjects];
-            options_expenseTypes = JSON.parse(localStorage.getItem('options_expense_types')) || [...defaultExpenseTypes];
-            options_companies = JSON.parse(localStorage.getItem('options_companies')) || [...defaultCompanies];
-            options_companyAccounts = JSON.parse(localStorage.getItem('options_company_accounts')) || [...defaultCompanyAccounts];
+            options_payees = JSON.parse(localStorage.getItem('options_payees')) || [];
+            options_paymentTypes = JSON.parse(localStorage.getItem('options_payment_types')) || [];
+            options_projects = JSON.parse(localStorage.getItem('options_projects')) || [];
+            options_expenseTypes = JSON.parse(localStorage.getItem('options_expense_types')) || [];
+            options_companies = JSON.parse(localStorage.getItem('options_companies')) || [];
+            options_companyAccounts = JSON.parse(localStorage.getItem('options_company_accounts')) || [];
             records = JSON.parse(localStorage.getItem('upgraded_financial_records_v1')) || [];
         }
 
         // บันทึกการส่งคำร้องเขียนทับฐานข้อมูลปลายทาง
         async function apiPostRequest(action, data) {
             if (!GAS_API_URL) {
-                // เซฟเข้า Local Storage หากไม่มี API URL
                 if (action === "save_requisition") {
                     const idx = records.findIndex(r => r.id === data.id);
                     if (idx !== -1) records[idx] = data;
@@ -956,7 +942,6 @@
             }
 
             try {
-                // หลีกเลี่ยง CORS Preflight โดยส่งเป็น text/plain
                 const response = await fetchWithTimeout(GAS_API_URL, {
                     method: "POST",
                     headers: { "Content-Type": "text/plain" },
@@ -999,7 +984,7 @@
             }
         }
 
-        // ฟังก์ชันช่วยดึงค่าข้อมูลพร้อมจับเวลาป้องกันระบบค้าง
+        // ดึงข้อมูลพร้อมการจับเวลาหมดอายุ (Timeout)
         function fetchWithTimeout(url, options = {}, timeout = 15000) {
             return Promise.race([
                 fetch(url, options),
@@ -1157,7 +1142,15 @@
             document.getElementById('welcome-user-role').innerText = currentUser.role;
             document.getElementById('recorder').value = currentUser.name;
 
-            // Populate Form Dropdowns
+            // คัดกรองควบคุมแสดงผลปุ่มตั้งค่าระบบชีตในแถบ Sidebar ตามสิทธิ์พนักงาน
+            const configBtn = document.getElementById('sidebar-config-btn');
+            if (currentUser.role === 'เจ้าหน้าที่การเงิน') {
+                configBtn.classList.remove('hidden');
+            } else {
+                configBtn.classList.add('hidden');
+            }
+
+            // เติมข้อมูล Dropdowns ต่างๆ จากตัวเลือกชีต
             populateDropdown('company', options_companies, 'company_id', 'company_name');
             populateDropdown('project', options_projects, 'project_code', 'project_name');
             populateDropdown('expenseType', options_expenseTypes, 'expense_type', 'expense_type');
@@ -1238,6 +1231,7 @@
             banner.innerHTML = bannerHTML;
         }
 
+        // คำนวณสรุปยอด Dashboard
         function updateDashboardStats() {
             const subset = getAuthorizedRecords();
             let pendingCount = 0, approvedCount = 0, approvedSum = 0, paidSum = 0, taxSum = 0;
@@ -1260,6 +1254,7 @@
             document.getElementById('stat-tax-summary').innerText = `฿${taxSum.toLocaleString('th-TH', {minimumFractionDigits: 2})}`;
         }
 
+        // แสดงสัดส่วนรายจ่าย
         function renderExpenseBreakdown() {
             const container = document.getElementById('expense-breakdown-container');
             if (!container) return;
@@ -1302,6 +1297,9 @@
             }
         }
 
+        // ==============================================
+        // TO-DO LIST & DETERMINATION
+        // ==============================================
         function renderTodoListDashboard() {
             const container = document.getElementById('todo-items-container');
             if (!container) return;
@@ -1347,6 +1345,9 @@
             });
         }
 
+        // ==============================================
+        // MAIN TABLE RENDER & FILTERING
+        // ==============================================
         function renderTable() {
             const tbody = document.getElementById('database-tbody');
             if (!tbody) return;
@@ -1399,6 +1400,7 @@
             });
         }
 
+        // คำนวณยอดรวมบิล & VAT/WHT สุทธิแบบ Flat 10 รายการ
         function calculateTotalSum() {
             let subtotal = 0;
             for (let i = 1; i <= 10; i++) {
@@ -1437,6 +1439,9 @@
             return grandTotal;
         }
 
+        // ==============================================
+        // CORE ACTIONS: SUBMIT REQUISITION
+        // ==============================================
         async function handleRequisitionSubmit(e) {
             e.preventDefault();
             const total = calculateTotalSum();
@@ -1513,6 +1518,9 @@
             generateAutoDocNo();
         }
 
+        // ==============================================
+        // RECORD PAYMENT ACTION
+        // ==============================================
         function triggerPaymentConfirmation(id) {
             switchTab('pay');
             setTimeout(() => {
@@ -1605,6 +1613,9 @@
             document.getElementById('payment-form').classList.add('hidden');
         }
 
+        // ==============================================
+        // APPROVAL DISPOSITION WORKFLOW (ผู้จัดการ)
+        // ==============================================
         async function setRecordApprovalStatus(id, newStatus, reason) {
             const r = records.find(rec => rec.id === id);
             if (!r) return;
@@ -1638,6 +1649,33 @@
             const viewTitle = document.getElementById('view-title');
             const viewDesc = document.getElementById('view-description');
 
+            // --- เริ่มโค้ดทำไฮไลต์เมนูอย่างมีมิติ (Active Menu Highlighting) ---
+            const menuButtons = {
+                'dashboard': 'tab-dashboard-btn',
+                'req': 'tab-req-btn',
+                'pay': 'tab-pay-btn',
+                'list': 'tab-list-btn',
+                'users': 'tab-users-btn'
+            };
+
+            // ลบสถานะไฮไลต์ทั้งหมดออกก่อนหน้า (Reset inactive menus)
+            Object.values(menuButtons).forEach(btnId => {
+                const btn = document.getElementById(btnId);
+                if (btn) {
+                    btn.className = "w-full text-left flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-900 hover:text-white text-xs font-medium transition-all";
+                }
+            });
+
+            // เพิ่มสถานะไฮไลต์เมนูในปัจจุบัน (Activate selected menu)
+            const activeBtnId = menuButtons[tab];
+            if (activeBtnId) {
+                const activeBtn = document.getElementById(activeBtnId);
+                if (activeBtn) {
+                    activeBtn.className = "w-full text-left flex items-center gap-3 px-4 py-3 rounded-xl bg-indigo-600 text-white text-xs font-semibold transition-all shadow-md shadow-indigo-600/10";
+                }
+            }
+            // --- จบโค้ดทำไฮไลต์เมนู ---
+
             if (tab === 'dashboard') {
                 viewTitle.innerText = "แผงวิเคราะห์สรุปข้อมูล (Dashboard)";
                 viewDesc.innerText = "ภาพรวมรายการตั้งเบิก ยอดค่าใช้จ่าย และการอนุมัติเงิน";
@@ -1664,7 +1702,6 @@
             const modalContent = document.getElementById('modal-content');
             const managerActionPanel = document.getElementById('manager-action-panel');
             
-            // Populate Items List table
             let itemsHTML = '';
             for (let i = 1; i <= 10; i++) {
                 if (r[`desc${i}`] || r[`amount${i}`]) {
@@ -1747,169 +1784,6 @@
 
             document.getElementById('modal-print-btn').onclick = () => printRecord(r.id);
             document.getElementById('detail-modal').classList.remove('hidden');
-        }
-
-        function closeModal() {
-            document.getElementById('detail-modal').classList.add('hidden');
-        }
-
-        async function deleteRecord(id) {
-            showConfirmDialog("ยืนยันสิทธิ์การลบ", "คุณต้องการลบคำขอและใบสำคัญตั้งเบิกนี้ใช่หรือไม่?", async () => {
-                showToast("กำลังส่งคำขอลบไปยังฐานข้อมูล...", "info");
-                const result = await apiPostRequest("delete_requisition", id);
-                if (result.status === "success") {
-                    showToast(result.message, "success");
-                    setTimeout(() => { location.reload(); }, 1500);
-                } else {
-                    showToast("ล้มเหลว: " + result.message, "error");
-                }
-            });
-        }
-
-        // ==============================================
-        // CUSTOM MODALS & CONFIRM DIALOGS
-        // ==============================================
-        function showConfirmDialog(title, message, onOkCallback) {
-            const modal = document.getElementById('confirm-modal');
-            document.getElementById('confirm-modal-title').innerText = title;
-            document.getElementById('confirm-modal-message').innerText = message;
-            
-            const okBtn = document.getElementById('confirm-modal-ok-btn');
-            const cancelBtn = document.getElementById('confirm-modal-cancel-btn');
-
-            okBtn.onclick = function() {
-                modal.classList.add('hidden');
-                onOkCallback();
-            };
-
-            cancelBtn.onclick = function() {
-                modal.classList.add('hidden');
-            };
-
-            modal.classList.remove('hidden');
-        }
-
-        function renderUserSwitcher() {
-            const dropdown = document.getElementById('user-switch-dropdown');
-            if (!dropdown) return;
-
-            let html = `<p class="text-[10px] uppercase font-bold text-slate-400 px-3 py-1.5 border-b">สลับสิทธิ์ผู้ใช้งาน</p>`;
-            systemUsers.forEach(u => {
-                let dotColor = "bg-slate-400";
-                if (u.role === "เจ้าหน้าที่การเงิน") dotColor = "bg-emerald-500";
-                else if (u.role === "ผู้จัดการอนุมัติ") dotColor = "bg-indigo-500";
-                else if (u.role === "ผู้บันทึกจัดซื้อ") dotColor = "bg-amber-500";
-
-                html += `
-                    <button type="button" onclick="switchUserSessionById('${u.id}')" class="w-full text-left px-3 py-2 hover:bg-slate-50 flex items-center gap-2 border-t">
-                        <span class="w-2.5 h-2.5 rounded-full ${dotColor}"></span>
-                        <div>
-                            <p class="font-bold text-slate-900">${u.name}</p>
-                            <p class="text-[9px] text-slate-500">${u.role}</p>
-                        </div>
-                    </button>
-                `;
-            });
-
-            html += `
-                <button type="button" onclick="handleLogout()" class="w-full text-left px-3 py-2.5 bg-rose-50 hover:bg-rose-100 text-rose-600 font-bold border-t flex items-center gap-1.5">
-                    <i class="fa-solid fa-right-from-bracket"></i> ออกจากระบบ
-                </button>
-            `;
-            dropdown.innerHTML = html;
-        }
-
-        function switchUserSessionById(id) {
-            const u = systemUsers.find(user => user.id === id);
-            if (u) {
-                currentUser = { name: u.name, role: u.role, email: u.email };
-                localStorage.setItem('current_logged_in_user', JSON.stringify(currentUser));
-                updateUserInterface();
-                showToast(`สลับสิทธิ์การใช้งานเป็นคุณ: ${u.name}`, 'success');
-                document.getElementById('user-switch-dropdown').classList.add('hidden');
-            }
-        }
-
-        // ==============================================
-        // USER CONFIG & DATA VIEW TABLE
-        // ==============================================
-        function renderUsersTable() {
-            const tbody = document.getElementById('users-table-tbody');
-            if (!tbody) return;
-            tbody.innerHTML = '';
-
-            systemUsers.forEach(u => {
-                const tr = document.createElement('tr');
-                tr.className = "hover:bg-slate-50 border-b";
-                tr.innerHTML = `
-                    <td class="py-3 px-3 font-bold text-slate-800">${u.name}</td>
-                    <td class="py-3 px-3 font-mono text-slate-500">${u.username}</td>
-                    <td class="py-3 px-3"><span class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100">${u.role}</span></td>
-                    <td class="py-3 px-3 text-center">
-                        <div class="flex items-center justify-center gap-1.5">
-                            <button onclick="triggerEditUser('${u.id}')" class="text-amber-500 hover:text-amber-700"><i class="fa-regular fa-edit"></i></button>
-                            <button onclick="deleteUser('${u.id}')" class="text-rose-500 hover:text-rose-700"><i class="fa-regular fa-trash-can"></i></button>
-                        </div>
-                    </td>
-                `;
-                tbody.appendChild(tr);
-            });
-        }
-
-        function cancelUserEdit() {
-            document.getElementById('user-edit-id').value = '';
-            document.getElementById('user-form').reset();
-            document.getElementById('user-form-title').innerHTML = `<i class="fa-solid fa-user-plus text-indigo-600"></i> เพิ่มผู้ใช้งานระบบใหม่`;
-        }
-
-        async function handleUserSubmit(e) {
-            e.preventDefault();
-            const id = document.getElementById('user-edit-id').value || 'usr-' + Date.now();
-            
-            const payload = {
-                id: id,
-                name: document.getElementById('user-fullname').value.trim(),
-                username: document.getElementById('user-username').value.trim(),
-                password: document.getElementById('user-password').value,
-                role: document.getElementById('user-role').value,
-                email: ""
-            };
-
-            showToast("กำลังประมวลผลบันทึกรายชื่อ...", "info");
-            const result = await apiPostRequest("save_user", payload);
-            if (result.status === "success") {
-                showToast("บันทึกข้อมูลพนักงานเสร็จสิ้น!", "success");
-                cancelUserEdit();
-                setTimeout(() => { location.reload(); }, 1500);
-            } else {
-                showToast("ล้มเหลว: " + result.message, "error");
-            }
-        }
-
-        function triggerEditUser(id) {
-            const u = systemUsers.find(user => user.id === id);
-            if (!u) return;
-
-            document.getElementById('user-edit-id').value = u.id;
-            document.getElementById('user-fullname').value = u.name;
-            document.getElementById('user-username').value = u.username;
-            document.getElementById('user-password').value = u.password;
-            document.getElementById('user-role').value = u.role;
-
-            document.getElementById('user-form-title').innerHTML = `<i class="fa-solid fa-user-pen text-amber-500"></i> แก้ไขข้อมูลผู้ใช้`;
-        }
-
-        async function deleteUser(id) {
-            showConfirmDialog("ยืนยันการลบ", "คุณแน่ใจว่าต้องการลบบัญชีผู้ใช้นี้ออกจากระบบหลัก?", async () => {
-                showToast("กำลังส่งคำขอลบพนักงาน...", "info");
-                const result = await apiPostRequest("delete_user", id);
-                if (result.status === "success") {
-                    showToast("ลบบัญชีผู้ใช้ออกเรียบร้อย", "success");
-                    setTimeout(() => { location.reload(); }, 1500);
-                } else {
-                    showToast("เกิดข้อผิดพลาด: " + result.message, "error");
-                }
-            });
         }
 
         // ==============================================
@@ -2036,101 +1910,177 @@
             window.print();
         }
 
+        function closeModal() {
+            document.getElementById('detail-modal').classList.add('hidden');
+        }
+
+        async function deleteRecord(id) {
+            showConfirmDialog("ยืนยันสิทธิ์การลบ", "คุณต้องการลบคำขอและใบสำคัญตั้งเบิกนี้ใช่หรือไม่?", async () => {
+                showToast("กำลังส่งคำขอลบไปยังฐานข้อมูล...", "info");
+                const result = await apiPostRequest("delete_requisition", id);
+                if (result.status === "success") {
+                    showToast(result.message, "success");
+                    setTimeout(() => { location.reload(); }, 1500);
+                } else {
+                    showToast("ล้มเหลว: " + result.message, "error");
+                }
+            });
+        }
+
+        // ==============================================
+        // CUSTOM MODALS & CONFIRM DIALOGS
+        // ==============================================
+        function showConfirmDialog(title, message, onOkCallback) {
+            const modal = document.getElementById('confirm-modal');
+            document.getElementById('confirm-modal-title').innerText = title;
+            document.getElementById('confirm-modal-message').innerText = message;
+            
+            const okBtn = document.getElementById('confirm-modal-ok-btn');
+            const cancelBtn = document.getElementById('confirm-modal-cancel-btn');
+
+            okBtn.onclick = function() {
+                modal.classList.add('hidden');
+                onOkCallback();
+            };
+
+            cancelBtn.onclick = function() {
+                modal.classList.add('hidden');
+            };
+
+            modal.classList.remove('hidden');
+        }
+
+        // ==============================================
+        // USER PROFILE SESSION MANAGEMENT
+        // ==============================================
+        function renderUserSwitcher() {
+            const dropdown = document.getElementById('user-switch-dropdown');
+            if (!dropdown) return;
+
+            let html = `<p class="text-[10px] uppercase font-bold text-slate-400 px-3 py-1.5 border-b">สลับสิทธิ์ผู้ใช้งาน</p>`;
+            systemUsers.forEach(u => {
+                let dotColor = "bg-slate-400";
+                if (u.role === "เจ้าหน้าที่การเงิน") dotColor = "bg-emerald-500";
+                else if (u.role === "ผู้จัดการอนุมัติ") dotColor = "bg-indigo-500";
+                else if (u.role === "ผู้บันทึกจัดซื้อ") dotColor = "bg-amber-500";
+
+                html += `
+                    <button type="button" onclick="switchUserSessionById('${u.id}')" class="w-full text-left px-3 py-2 hover:bg-slate-50 flex items-center gap-2 border-t">
+                        <span class="w-2.5 h-2.5 rounded-full ${dotColor}"></span>
+                        <div>
+                            <p class="font-bold text-slate-900">${u.name}</p>
+                            <p class="text-[9px] text-slate-500">${u.role}</p>
+                        </div>
+                    </button>
+                `;
+            });
+
+            html += `
+                <button type="button" onclick="handleLogout()" class="w-full text-left px-3 py-2.5 bg-rose-50 hover:bg-rose-100 text-rose-600 font-bold border-t flex items-center gap-1.5">
+                    <i class="fa-solid fa-right-from-bracket"></i> ออกจากระบบ
+                </button>
+            `;
+            dropdown.innerHTML = html;
+        }
+
+        function switchUserSessionById(id) {
+            const u = systemUsers.find(user => user.id === id);
+            if (u) {
+                currentUser = { name: u.name, role: u.role, email: u.email };
+                localStorage.setItem('current_logged_in_user', JSON.stringify(currentUser));
+                updateUserInterface();
+                showToast(`สลับสิทธิ์การใช้งานเป็นคุณ: ${u.name}`, 'success');
+                document.getElementById('user-switch-dropdown').classList.add('hidden');
+            }
+        }
+
+        // ==============================================
+        // USER CONFIG & DATA VIEW TABLE
+        // ==============================================
+        function renderUsersTable() {
+            const tbody = document.getElementById('users-table-tbody');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+
+            systemUsers.forEach(u => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50 border-b";
+                tr.innerHTML = `
+                    <td class="py-3 px-3 font-bold text-slate-800">${u.name}</td>
+                    <td class="py-3 px-3 font-mono text-slate-500">${u.username}</td>
+                    <td class="py-3 px-3"><span class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100">${u.role}</span></td>
+                    <td class="py-3 px-3 text-center">
+                        <div class="flex items-center justify-center gap-1.5">
+                            <button onclick="triggerEditUser('${u.id}')" class="text-amber-500 hover:text-amber-700"><i class="fa-regular fa-edit"></i></button>
+                            <button onclick="deleteUser('${u.id}')" class="text-rose-500 hover:text-rose-700"><i class="fa-regular fa-trash-can"></i></button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function cancelUserEdit() {
+            document.getElementById('user-edit-id').value = '';
+            document.getElementById('user-form').reset();
+            document.getElementById('user-form-title').innerHTML = `<i class="fa-solid fa-user-plus text-indigo-600"></i> เพิ่มผู้ใช้งานระบบใหม่`;
+        }
+
+        async function handleUserSubmit(e) {
+            e.preventDefault();
+            const id = document.getElementById('user-edit-id').value || 'usr-' + Date.now();
+            
+            const payload = {
+                id: id,
+                name: document.getElementById('user-fullname').value.trim(),
+                username: document.getElementById('user-username').value.trim(),
+                password: document.getElementById('user-password').value,
+                role: document.getElementById('user-role').value,
+                email: ""
+            };
+
+            showToast("กำลังประมวลผลบันทึกรายชื่อ...", "info");
+            const result = await apiPostRequest("save_user", payload);
+            if (result.status === "success") {
+                showToast("บันทึกข้อมูลพนักงานเสร็จสิ้น!", "success");
+                cancelUserEdit();
+                setTimeout(() => { location.reload(); }, 1500);
+            } else {
+                showToast("ล้มเหลว: " + result.message, "error");
+            }
+        }
+
+        function triggerEditUser(id) {
+            const u = systemUsers.find(user => user.id === id);
+            if (!u) return;
+
+            document.getElementById('user-edit-id').value = u.id;
+            document.getElementById('user-fullname').value = u.name;
+            document.getElementById('user-username').value = u.username;
+            document.getElementById('user-password').value = u.password;
+            document.getElementById('user-role').value = u.role;
+
+            document.getElementById('user-form-title').innerHTML = `<i class="fa-solid fa-user-pen text-amber-500"></i> แก้ไขข้อมูลผู้ใช้`;
+        }
+
+        async function deleteUser(id) {
+            showConfirmDialog("ยืนยันการลบ", "คุณแน่ใจว่าต้องการลบบัญชีผู้ใช้นี้ออกจากระบบหลัก?", async () => {
+                showToast("กำลังส่งคำขอลบพนักงาน...", "info");
+                const result = await apiPostRequest("delete_user", id);
+                if (result.status === "success") {
+                    showToast("ลบบัญชีผู้ใช้ออกเรียบร้อย", "success");
+                    setTimeout(() => { location.reload(); }, 1500);
+                } else {
+                    showToast("เกิดข้อผิดพลาด: " + result.message, "error");
+                }
+            });
+        }
+
         function formatDateThai(dateString) {
             if (!dateString || dateString === '-') return '-';
             const date = new Date(dateString);
             if (isNaN(date.getTime())) return dateString;
             return date.toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric' });
-        }
-
-        function viewCategoryRecords(status) {
-            const list = getAuthorizedRecords().filter(r => r.status === status);
-            const titleMap = {
-                'Pending Approval': 'รายการใบเบิกที่ "รออนุมัติ" ทั้งหมด',
-                'Approved': 'รายการใบเบิกที่ "อนุมัติแล้วรอโอนจ่าย" ทั้งหมด',
-                'Paid': 'รายการสำคัญที่ "โอนเงินเรียบร้อยแล้ว" ทั้งหมด'
-            };
-            showQuickListModal(titleMap[status] || status, list);
-        }
-
-        function showQuickListModal(title, list) {
-            const modal = document.getElementById('detail-modal');
-            const modalContent = document.getElementById('modal-content');
-            
-            document.getElementById('manager-action-panel').classList.add('hidden');
-            document.getElementById('modal-print-btn').classList.add('hidden');
-            document.getElementById('modal-pay-btn').classList.add('hidden');
-            document.getElementById('modal-edit-btn').classList.add('hidden');
-
-            const headerTitle = modal.querySelector('h3');
-            headerTitle.innerHTML = `<i class="fa-solid fa-list-check text-indigo-400 text-lg mr-2"></i> ${title}`;
-
-            let listHTML = `
-                <div class="space-y-4 font-sans text-xs">
-                    <div class="overflow-x-auto border rounded-xl bg-white shadow-sm">
-                        <table class="w-full text-left border-collapse text-xs">
-                            <thead class="bg-slate-50 border-b">
-                                <tr class="text-slate-500 font-bold uppercase">
-                                    <th class="py-3 px-4">เลขที่เอกสาร</th>
-                                    <th class="py-3 px-4">บริษัท / โครงการ</th>
-                                    <th class="py-3 px-4 text-right">ยอดสุทธิ</th>
-                                    <th class="py-3 px-4 text-center">การจัดการ</th>
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y">
-            `;
-
-            if (list.length === 0) {
-                listHTML += `<tr><td colspan="4" class="py-8 text-center text-slate-400 italic">ไม่พบบันทึกสอดคล้องกับหัวข้อนี้</td></tr>`;
-            } else {
-                list.forEach(r => {
-                    listHTML += `
-                        <tr class="hover:bg-slate-50">
-                            <td class="py-3 px-4 font-bold font-mono text-indigo-950">${r.docNo}</td>
-                            <td class="py-3 px-4">
-                                <p class="font-bold text-slate-800">${r.company}</p>
-                                <p class="text-[10px] text-slate-500">คู่ค้า: ${r.payeeName}</p>
-                            </td>
-                            <td class="py-3 px-4 text-right font-extrabold text-slate-900">฿${parseFloat(r.totalAmount).toLocaleString('th-TH', {minimumFractionDigits: 2})}</td>
-                            <td class="py-3 px-4 text-center">
-                                <button onclick="viewRecordDetail('${r.id}')" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-3 py-1.5 rounded-lg text-[10px]">เปิดดู</button>
-                            </td>
-                        </tr>
-                    `;
-                });
-            }
-
-            listHTML += `</tbody></table></div></div>`;
-            modalContent.innerHTML = listHTML;
-            modal.classList.remove('hidden');
-        }
-
-        function showToast(message, type = 'info') {
-            const container = document.getElementById('toast-container');
-            const toast = document.createElement('div');
-            
-            let colorClass = 'bg-slate-900 text-white border-l-4 border-indigo-500';
-            let icon = '<i class="fa-solid fa-circle-info text-indigo-400"></i>';
-            
-            if (type === 'success') {
-                colorClass = 'bg-slate-900 text-emerald-400 border-l-4 border-emerald-500';
-                icon = '<i class="fa-solid fa-circle-check text-emerald-400"></i>';
-            } else if (type === 'error') {
-                colorClass = 'bg-slate-900 text-rose-400 border-l-4 border-rose-500';
-                icon = '<i class="fa-solid fa-circle-exclamation text-rose-400"></i>';
-            }
-
-            toast.className = `p-4 rounded-xl shadow-xl flex items-center gap-3 text-xs font-semibold min-w-[280px] transition-all duration-300 ${colorClass}`;
-            toast.innerHTML = `
-                ${icon}
-                <div class="flex-grow">${message}</div>
-                <button onclick="this.parentElement.remove()" class="text-slate-400 hover:text-white ml-2">
-                    <i class="fa-solid fa-xmark"></i>
-                </button>
-            `;
-
-            container.appendChild(toast);
-            setTimeout(() => { toast.remove(); }, 5000);
         }
     </script>
 </body>
