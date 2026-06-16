@@ -353,7 +353,7 @@
                                 <i class="fa-solid fa-file-invoice text-indigo-600"></i>
                                 <h2 class="font-bold text-slate-800 text-sm sm:text-base">รายละเอียดเอกสารขอเบิกเงิน (Requisition Details)</h2>
                             </div>
-                            <div class="p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                            <div class="p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
                                 <div>
                                     <label class="block text-xs font-semibold text-slate-600 mb-1.5">ผู้ตั้งเบิก</label>
                                     <input type="text" id="recorder" readonly class="w-full px-3 py-2 text-sm bg-slate-100 border text-slate-500 rounded-lg">
@@ -361,6 +361,14 @@
                                 <div>
                                     <label class="block text-xs font-semibold text-slate-600 mb-1.5">เลขที่เอกสารตั้งเบิก</label>
                                     <input type="text" id="docNo" readonly class="w-full px-3 py-2 text-sm bg-slate-100 border text-slate-500 rounded-lg font-mono font-semibold">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-600 mb-1.5">วันที่ตั้งเบิกเอกสาร <span class="text-red-500">*</span></label>
+                                    <input type="date" id="recordDate" required onchange="onRecordDateChange()" class="w-full px-3 py-2 text-sm bg-slate-50 border rounded-lg focus:outline-none">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-600 mb-1.5">วันครบกำหนดชำระเงิน <span class="text-red-500">*</span></label>
+                                    <input type="date" id="dueDate" required class="w-full px-3 py-2 text-sm bg-slate-50 border rounded-lg focus:outline-none">
                                 </div>
                                 <div>
                                     <label class="block text-xs font-semibold text-slate-600 mb-1.5">เลขที่เอกสารอ้างอิง (Ref.)</label>
@@ -491,20 +499,21 @@
                             </div>
                         </div>
 
-                        <!-- Remarks and Date -->
+                        <!-- Remarks and Attachment -->
                         <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
                             <div class="bg-slate-50 border-b border-slate-100 px-6 py-4 flex items-center gap-2">
                                 <i class="fa-regular fa-comment-dots text-indigo-600"></i>
                                 <h2 class="font-bold text-slate-800 text-sm">รายละเอียดเพิ่มเติมและเอกสารแนบ</h2>
                             </div>
-                            <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-5">
-                                <div>
-                                    <label class="block text-xs font-semibold text-slate-600 mb-1.5">วันที่ตั้งเบิกเอกสาร <span class="text-red-500">*</span></label>
-                                    <input type="date" id="recordDate" required onchange="onRecordDateChange()" class="w-full px-3 py-2 text-sm bg-slate-50 border rounded-lg focus:outline-none">
-                                </div>
-                                <div>
-                                    <label class="block text-xs font-semibold text-slate-600 mb-1.5">วันครบกำหนดชำระเงิน <span class="text-red-500">*</span></label>
-                                    <input type="date" id="dueDate" required class="w-full px-3 py-2 text-sm bg-slate-50 border rounded-lg focus:outline-none">
+                            <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-5 text-xs">
+                                <div class="md:col-span-2">
+                                    <label class="block text-xs font-semibold text-slate-600 mb-1.5">ลิงก์แนบเอกสารใบเสนอราคา/ใบแจ้งหนี้ (Google Drive / URL)</label>
+                                    <div class="relative">
+                                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
+                                            <i class="fa-solid fa-link"></i>
+                                        </span>
+                                        <input type="text" id="reqAttachment" class="w-full pl-9 pr-3 py-2 bg-slate-50 border rounded-lg focus:outline-none" placeholder="https://drive.google.com/...">
+                                    </div>
                                 </div>
                                 <div class="md:col-span-2">
                                     <label class="block text-xs font-semibold text-slate-600 mb-1.5">หมายเหตุเพิ่มเติม</label>
@@ -724,7 +733,7 @@
         </div>
     </div>
 
-    <!-- CONFIGURATION GOOGLE SHEETS API MODAL (ซ่อนสำหรับคนนอกระบบ) -->
+    <!-- CONFIGURATION GOOGLE SHEETS API MODAL -->
     <div id="config-modal" class="hidden fixed inset-0 z-50 bg-slate-950/60 flex items-center justify-center p-4 backdrop-blur-sm">
         <div class="bg-white rounded-2xl border border-slate-200 shadow-xl w-full max-w-lg p-6 space-y-4 text-xs sm:text-sm">
             <div class="flex justify-between items-center border-b pb-3">
@@ -1471,7 +1480,7 @@
                 whtAmount: parseFloat(document.getElementById('whtAmount').value),
                 totalAmount: total,
                 remarks: document.getElementById('remarks').value || "-",
-                reqAttachment: "",
+                reqAttachment: document.getElementById('reqAttachment').value.trim() || "-",
                 approvedBy: "",
                 managerComment: "",
                 paymentDate: "",
@@ -1503,7 +1512,7 @@
         function cancelReqEdit() {
             document.getElementById('req-edit-id').value = "";
             document.getElementById('req-editing-alert').classList.add('hidden');
-            document.getElementById('req-submit-btn').innerHTML = '<i class="fa-regular fa-floppy-disk"></i> ส่งเสนอคำขอตั้งเบิก';
+            document.getElementById('req-submit-btn').innerHTML = '<i class="fa-regular fa-floppy-disk mr-1"></i> ส่งเสนอคำขอตั้งเบิก';
             clearReqForm();
         }
 
@@ -1639,6 +1648,48 @@
         }
 
         // ==============================================
+        // TRIGGER REQUISITION EDITING
+        // ==============================================
+        function triggerEditRequisition(id) {
+            const r = records.find(rec => rec.id === id);
+            if (!r) return;
+            
+            closeModal();
+            switchTab('req');
+            
+            document.getElementById('req-edit-id').value = r.id;
+            document.getElementById('req-editing-alert').classList.remove('hidden');
+            document.getElementById('req-submit-btn').innerHTML = '<i class="fa-regular fa-floppy-disk mr-1"></i> บันทึกการแก้ไข';
+            
+            // เติมข้อมูลลงช่อง Input หลัก
+            document.getElementById('docNo').value = r.docNo;
+            document.getElementById('refDocNo').value = r.refDocNo === '-' ? '' : r.refDocNo;
+            document.getElementById('company').value = r.company;
+            document.getElementById('project').value = r.project;
+            document.getElementById('recordDate').value = r.recordDate;
+            document.getElementById('dueDate').value = r.dueDate;
+            document.getElementById('expenseType').value = r.expenseType;
+            document.getElementById('payeeName').value = r.payeeName;
+            
+            // เรียกฟังก์ชันดึงรายละเอียดสมุดบัญชีคู่ค้าอัตโนมัติ
+            onPayeeChange(r.payeeName);
+            document.getElementById('paymentMethod').value = r.paymentMethod;
+            
+            // รายการแถวสิบแถว
+            for (let i = 1; i <= 10; i++) {
+                document.getElementById(`desc${i}`).value = r[`desc${i}`] || '';
+                document.getElementById(`amount${i}`).value = r[`amount${i}`] ? parseFloat(r[`amount${i}`]).toFixed(2) : '';
+            }
+            
+            document.getElementById('vatType').value = r.vatType || 'none';
+            document.getElementById('whtType').value = r.whtType || '0';
+            document.getElementById('remarks').value = r.remarks === '-' ? '' : r.remarks;
+            document.getElementById('reqAttachment').value = r.reqAttachment === '-' ? '' : r.reqAttachment;
+            
+            calculateTotalSum();
+        }
+
+        // ==============================================
         // GENERAL UTILITIES & LISTS VISUALIZATION
         // ==============================================
         function switchTab(tab) {
@@ -1726,6 +1777,7 @@
                             <p><b>วันครบกำหนดจ่าย:</b> <span class="text-rose-600 font-bold">${formatDateThai(r.dueDate)}</span></p>
                             <p><b>โครงการ:</b> ${r.project}</p>
                             <p><b>ผู้ขอตั้งเบิก:</b> ${r.recorder}</p>
+                            <p><b>เอกสารแนบตั้งเบิก:</b> ${r.reqAttachment && r.reqAttachment !== '-' ? `<a href="${r.reqAttachment}" target="_blank" class="text-indigo-600 hover:underline font-bold inline-flex items-center gap-1"><i class="fa-solid fa-file-pdf"></i> คลิกเพื่อเปิดไฟล์แนบ</a>` : '<span class="text-slate-400 italic">ไม่มีไฟล์แนบ</span>'}</p>
                         </div>
                     </div>
                     <div>
@@ -1780,6 +1832,28 @@
                 };
             } else {
                 managerActionPanel.classList.add('hidden');
+            }
+
+            const editBtn = document.getElementById('modal-edit-btn');
+            const payBtn = document.getElementById('modal-pay-btn');
+
+            // เงื่อนไขในการแสดงปุ่มแก้ไขใบเบิก (สามารถแก้ไขได้เมื่อไม่ใช่ใบที่โอนชำระเงินสำเร็จแล้ว)
+            if (r.status !== 'Paid' && (currentUser.role === 'เจ้าหน้าที่การเงิน' || r.recorder === currentUser.name)) {
+                editBtn.classList.remove('hidden');
+                editBtn.onclick = () => triggerEditRequisition(r.id);
+            } else {
+                editBtn.classList.add('hidden');
+            }
+
+            // เงื่อนไขในการเข้าจ่ายเงินด่วน
+            if (r.status === 'Approved' && currentUser.role === 'เจ้าหน้าที่การเงิน') {
+                payBtn.classList.remove('hidden');
+                payBtn.onclick = () => {
+                    closeModal();
+                    triggerPaymentConfirmation(r.id);
+                };
+            } else {
+                payBtn.classList.add('hidden');
             }
 
             document.getElementById('modal-print-btn').onclick = () => printRecord(r.id);
