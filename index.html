@@ -489,13 +489,33 @@
                             </div>
                             <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-5 text-xs">
                                 <div class="md:col-span-2">
-                                    <label class="block text-xs font-semibold text-slate-600 mb-1.5">ลิงก์แนบเอกสารใบเสนอราคา/ใบแจ้งหนี้ (Google Drive / URL)</label>
-                                    <div class="relative">
-                                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
-                                            <i class="fa-solid fa-link"></i>
-                                        </span>
-                                        <input type="text" id="reqAttachment" class="w-full pl-9 pr-3 py-2 bg-slate-50 border rounded-lg focus:outline-none" placeholder="https://drive.google.com/...">
+                                    <label class="block text-xs font-semibold text-slate-600 mb-1.5">แนบเอกสารใบเสนอราคา/ใบแจ้งหนี้ (อัพโหลดไฟล์)</label>
+                                    <div id="req-attachment-uploader" data-target="reqAttachment" data-filetype="requisition"
+                                         class="file-uploader border-2 border-dashed border-slate-300 rounded-xl p-5 text-center cursor-pointer hover:border-indigo-400 hover:bg-indigo-50/30 transition-all bg-slate-50">
+                                        <div class="file-uploader-empty">
+                                            <i class="fa-solid fa-cloud-arrow-up text-3xl text-slate-400 mb-2"></i>
+                                            <p class="text-xs font-semibold text-slate-700">คลิก หรือลากไฟล์มาวางที่นี่</p>
+                                            <p class="text-[10px] text-slate-400 mt-1">รองรับ PDF, รูปภาพ, เอกสาร (สูงสุด 10MB)</p>
+                                        </div>
+                                        <div class="file-uploader-preview hidden">
+                                            <div class="flex items-center gap-3 p-2 bg-white border rounded-lg">
+                                                <i class="fa-solid fa-file text-indigo-500 text-xl"></i>
+                                                <div class="flex-grow text-left min-w-0">
+                                                    <p class="file-name text-xs font-bold text-slate-800 truncate"></p>
+                                                    <p class="file-size text-[10px] text-slate-500"></p>
+                                                </div>
+                                                <a class="file-link text-indigo-600 hover:text-indigo-800 text-xs" target="_blank" title="เปิดดู">
+                                                    <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                                                </a>
+                                                <button type="button" class="file-remove text-rose-500 hover:text-rose-700 text-xs" title="ลบ">
+                                                    <i class="fa-solid fa-xmark"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <input type="file" class="hidden file-uploader-input" accept=".pdf,.jpg,.jpeg,.png,.webp,.doc,.docx,.xls,.xlsx">
                                     </div>
+                                    <input type="hidden" id="reqAttachment" value="">
+                                    <p class="text-[10px] text-slate-400 mt-1"><i class="fa-solid fa-circle-info mr-1"></i> ไฟล์จะถูกบันทึกใน Google Drive ชื่อจะตั้งตามเลขที่เอกสารอัตโนมัติ</p>
                                 </div>
                                 <div class="md:col-span-2">
                                     <label class="block text-xs font-semibold text-slate-600 mb-1.5">หมายเหตุเพิ่มเติม</label>
@@ -592,9 +612,34 @@
                                         <label class="block text-xs font-semibold text-slate-600 mb-1.5">เลขที่เช็ค หรือ เลขอ้างอิงสลิป</label>
                                         <input type="text" id="chequeNo" class="w-full px-3 py-2 bg-slate-50 border rounded-lg focus:outline-none font-mono text-xs" placeholder="เช่น TXN-xxxxxxx">
                                     </div>
-                                    <div>
-                                        <label class="block text-xs font-semibold text-slate-600 mb-1.5">ลิงก์หลักฐานแนบโอนเงิน (URL รูปภาพ/Google Drive)</label>
-                                        <input type="text" id="paySlip" class="w-full px-3 py-2 bg-slate-50 border rounded-lg focus:outline-none" placeholder="https://drive.google.com/...">
+                                    <div class="md:col-span-3">
+                                        <label class="block text-xs font-semibold text-slate-600 mb-1.5">หลักฐานแนบโอนเงิน (อัพโหลดรูปสลิป/เอกสาร)</label>
+                                        <div id="pay-slip-uploader" data-target="paySlip" data-filetype="payment"
+                                             class="file-uploader border-2 border-dashed border-slate-300 rounded-xl p-4 text-center cursor-pointer hover:border-emerald-400 hover:bg-emerald-50/30 transition-all bg-slate-50">
+                                            <div class="file-uploader-empty">
+                                                <i class="fa-solid fa-cloud-arrow-up text-2xl text-slate-400 mb-1.5"></i>
+                                                <p class="text-xs font-semibold text-slate-700">คลิก หรือลากไฟล์มาวางที่นี่</p>
+                                                <p class="text-[10px] text-slate-400 mt-0.5">รูปสลิป หรือ PDF (สูงสุด 10MB)</p>
+                                            </div>
+                                            <div class="file-uploader-preview hidden">
+                                                <div class="flex items-center gap-3 p-2 bg-white border rounded-lg">
+                                                    <i class="fa-solid fa-file text-emerald-500 text-xl"></i>
+                                                    <div class="flex-grow text-left min-w-0">
+                                                        <p class="file-name text-xs font-bold text-slate-800 truncate"></p>
+                                                        <p class="file-size text-[10px] text-slate-500"></p>
+                                                    </div>
+                                                    <a class="file-link text-indigo-600 hover:text-indigo-800 text-xs" target="_blank" title="เปิดดู">
+                                                        <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                                                    </a>
+                                                    <button type="button" class="file-remove text-rose-500 hover:text-rose-700 text-xs" title="ลบ">
+                                                        <i class="fa-solid fa-xmark"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            <input type="file" class="hidden file-uploader-input" accept=".pdf,.jpg,.jpeg,.png,.webp">
+                                        </div>
+                                        <input type="hidden" id="paySlip" value="">
+                                        <p class="text-[10px] text-slate-400 mt-1"><i class="fa-solid fa-circle-info mr-1"></i> ไฟล์จะถูกบันทึกใน Google Drive ชื่อจะตั้งตามเลขที่เอกสารอัตโนมัติ</p>
                                     </div>
                                 </div>
                             </div>
@@ -798,6 +843,28 @@
             return String(val);
         }
 
+        // แปลงขนาดไฟล์เป็น KB/MB
+        function formatFileSize(bytes) {
+            if (bytes < 1024) return bytes + ' B';
+            if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+            return (bytes / 1024 / 1024).toFixed(2) + ' MB';
+        }
+
+        // แปลง File เป็น base64
+        function fileToBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => {
+                    // ตัด "data:mime/type;base64," prefix ออก
+                    const result = reader.result;
+                    const base64 = result.split(',')[1];
+                    resolve(base64);
+                };
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
+        }
+
         let records = [];
         let systemUsers = [];
         let options_payees = [];
@@ -835,6 +902,9 @@
             // สร้าง 10 แถวของตาราง requisition ด้วย DOM API (แทน document.write)
             buildRequisitionItemsRows();
 
+            // Initialize file uploaders (drag-drop + click)
+            initAllFileUploaders();
+
             // อ่านค่าจาก API หลังบ้านหรือจำลอง Local Storage
             loadSystemData();
 
@@ -844,6 +914,145 @@
                     dropdown.classList.add('hidden');
                 }
             });
+        }
+
+        // ==============================================
+        // FILE UPLOADERS (Drag-drop + Click)
+        // ==============================================
+        function initAllFileUploaders() {
+            document.querySelectorAll('.file-uploader').forEach(uploader => {
+                const input = uploader.querySelector('.file-uploader-input');
+                const removeBtn = uploader.querySelector('.file-remove');
+
+                // คลิกที่กล่อง → เปิด file picker
+                uploader.addEventListener('click', (e) => {
+                    // ถ้าคลิกปุ่ม remove/link ไม่ต้องเปิด file picker
+                    if (e.target.closest('.file-remove') || e.target.closest('.file-link')) return;
+                    input.click();
+                });
+
+                // เมื่อเลือกไฟล์ผ่าน file picker
+                input.addEventListener('change', (e) => {
+                    const file = e.target.files[0];
+                    if (file) handleFileSelected(uploader, file);
+                });
+
+                // ปุ่มลบ → clear file
+                if (removeBtn) {
+                    removeBtn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        clearFileUploader(uploader);
+                    });
+                }
+
+                // Drag & drop
+                uploader.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    uploader.classList.add('border-indigo-500', 'bg-indigo-50');
+                });
+                uploader.addEventListener('dragleave', (e) => {
+                    e.preventDefault();
+                    uploader.classList.remove('border-indigo-500', 'bg-indigo-50');
+                });
+                uploader.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    uploader.classList.remove('border-indigo-500', 'bg-indigo-50');
+                    const file = e.dataTransfer.files[0];
+                    if (file) handleFileSelected(uploader, file);
+                });
+            });
+        }
+
+        // เมื่อเลือกไฟล์ → preview + เก็บไว้ใน state (ยังไม่ upload จริง)
+        function handleFileSelected(uploader, file) {
+            // validate size
+            if (file.size > 10 * 1024 * 1024) {
+                showToast("ไฟล์ใหญ่เกิน 10MB กรุณาลดขนาด", "error");
+                return;
+            }
+
+            // เก็บ file object ไว้ใน uploader
+            uploader._selectedFile = file;
+            uploader._selectedFileUrl = URL.createObjectURL(file);
+
+            // แสดง preview
+            const empty = uploader.querySelector('.file-uploader-empty');
+            const preview = uploader.querySelector('.file-uploader-preview');
+            const nameEl = uploader.querySelector('.file-name');
+            const sizeEl = uploader.querySelector('.file-size');
+            const linkEl = uploader.querySelector('.file-link');
+
+            nameEl.textContent = file.name;
+            sizeEl.textContent = formatFileSize(file.size);
+            linkEl.href = uploader._selectedFileUrl;
+
+            empty.classList.add('hidden');
+            preview.classList.remove('hidden');
+        }
+
+        // clear file (กดปุ่ม X)
+        function clearFileUploader(uploader) {
+            const input = uploader.querySelector('.file-uploader-input');
+            const empty = uploader.querySelector('.file-uploader-empty');
+            const preview = uploader.querySelector('.file-uploader-preview');
+            const targetId = uploader.dataset.target;
+            const targetInput = document.getElementById(targetId);
+
+            if (uploader._selectedFileUrl) {
+                URL.revokeObjectURL(uploader._selectedFileUrl);
+            }
+            uploader._selectedFile = null;
+            uploader._selectedFileUrl = null;
+            uploader._uploadedUrl = null; // ลบ URL ที่เคย upload แล้วด้วย
+
+            input.value = '';
+            if (targetInput) targetInput.value = '';
+
+            empty.classList.remove('hidden');
+            preview.classList.add('hidden');
+        }
+
+        // อัพโหลดไฟล์จาก uploader ขึ้น Google Drive (เรียกตอน submit form)
+        // returns URL string (หรือ null ถ้าไม่มีไฟล์)
+        async function uploadFileFromUploader(uploader, docNo) {
+            // ถ้าเคย upload แล้ว → return URL เดิม
+            if (uploader._uploadedUrl) return uploader._uploadedUrl;
+
+            // ถ้าไม่มีไฟล์ใหม่ → return ค่าเดิมใน hidden input (กรณี edit)
+            if (!uploader._selectedFile) {
+                const targetId = uploader.dataset.target;
+                const targetInput = document.getElementById(targetId);
+                return targetInput && targetInput.value && targetInput.value !== '-' ? targetInput.value : null;
+            }
+
+            const file = uploader._selectedFile;
+            const fileType = uploader.dataset.filetype || 'requisition';
+
+            try {
+                const base64 = await fileToBase64(file);
+                const response = await fetchWithTimeout(GAS_API_URL, {
+                    method: "POST",
+                    headers: { "Content-Type": "text/plain" },
+                    body: JSON.stringify({
+                        action: "upload_file",
+                        token: API_TOKEN,
+                        fileName: file.name,
+                        mimeType: file.type,
+                        base64Data: base64,
+                        docNo: docNo,
+                        fileType: fileType
+                    })
+                });
+                const result = await response.json();
+                if (result.status === "success") {
+                    uploader._uploadedUrl = result.fileUrl;
+                    return result.fileUrl;
+                } else {
+                    throw new Error(result.message);
+                }
+            } catch (err) {
+                throw new Error("อัพโหลดไฟล์ '" + file.name + "' ล้มเหลว: " + err.message);
+            }
         }
 
         // สร้าง 10 แถวของตารางรายการสินค้า/บริการ (แทน document.write เดิม)
@@ -1513,11 +1722,25 @@
 
             const isEdit = document.getElementById('req-edit-id').value !== "";
             const id = isEdit ? document.getElementById('req-edit-id').value : 'req-' + Date.now();
+            const docNo = document.getElementById('docNo').value;
+
+            // อัพโหลดไฟล์แนบก่อน (ถ้ามี)
+            const reqAttachmentUploader = document.getElementById('req-attachment-uploader');
+            let reqAttachmentUrl = "-";
+            try {
+                if (reqAttachmentUploader) {
+                    const uploaded = await uploadFileFromUploader(reqAttachmentUploader, docNo);
+                    reqAttachmentUrl = uploaded || "-";
+                }
+            } catch (err) {
+                showToast(err.message, "error");
+                return;
+            }
 
             const payload = {
                 id: id,
                 status: "Pending Approval",
-                docNo: document.getElementById('docNo').value,
+                docNo: docNo,
                 refDocNo: document.getElementById('refDocNo').value || "-",
                 company: document.getElementById('company').value,
                 project: document.getElementById('project').value,
@@ -1537,7 +1760,7 @@
                 whtAmount: safeNum(document.getElementById('whtAmount').value),
                 totalAmount: total,
                 remarks: document.getElementById('remarks').value || "-",
-                reqAttachment: document.getElementById('reqAttachment').value.trim() || "-",
+                reqAttachment: reqAttachmentUrl,
                 approvedBy: "",
                 managerComment: "",
                 paymentDate: "",
@@ -1560,7 +1783,6 @@
                 showToast(result.message, "success");
                 clearReqForm();
                 cancelReqEdit();
-                // re-render in-place แทน reload (เร็วกว่า + ไม่เสีย scroll position)
                 await refreshDataInPlace();
             } else {
                 showToast("ล้มเหลว: " + result.message, "error");
@@ -1581,6 +1803,9 @@
                 document.getElementById(`desc${i}`).value = "";
                 document.getElementById(`amount${i}`).value = "";
             }
+            // clear file uploader
+            const reqUploader = document.getElementById('req-attachment-uploader');
+            if (reqUploader) clearFileUploader(reqUploader);
             calculateTotalSum();
             generateAutoDocNo();
         }
@@ -1635,6 +1860,29 @@
 
             document.getElementById('transferAmount').value = safeNum(r.totalAmount).toFixed(2);
             document.getElementById('paymentDate').value = document.getElementById('system-ref-date').value;
+
+            // โหลดสลิปเดิม (ถ้ามี) เข้า uploader
+            const payUploader = document.getElementById('pay-slip-uploader');
+            const payInput = document.getElementById('paySlip');
+            if (payUploader && payInput) {
+                if (r.paySlip && r.paySlip !== '-') {
+                    payInput.value = r.paySlip;
+                    payUploader._uploadedUrl = r.paySlip;
+                    const empty = payUploader.querySelector('.file-uploader-empty');
+                    const preview = payUploader.querySelector('.file-uploader-preview');
+                    const nameEl = payUploader.querySelector('.file-name');
+                    const sizeEl = payUploader.querySelector('.file-size');
+                    const linkEl = payUploader.querySelector('.file-link');
+                    nameEl.textContent = r.paySlip.split('/').pop() || 'หลักฐานการโอน';
+                    sizeEl.textContent = '(ไฟล์เดิมที่อัพโหลดไว้แล้ว)';
+                    linkEl.href = r.paySlip;
+                    empty.classList.add('hidden');
+                    preview.classList.remove('hidden');
+                } else {
+                    clearFileUploader(payUploader);
+                }
+            }
+
             formScreen.classList.remove('hidden');
         }
 
@@ -1652,6 +1900,19 @@
             const original = records.find(rec => rec.id === id);
             if (!original) return;
 
+            // อัพโหลดสลิปก่อน (ถ้ามี)
+            const paySlipUploader = document.getElementById('pay-slip-uploader');
+            let paySlipUrl = original.paySlip || "-";
+            try {
+                if (paySlipUploader) {
+                    const uploaded = await uploadFileFromUploader(paySlipUploader, original.docNo);
+                    paySlipUrl = uploaded || original.paySlip || "-";
+                }
+            } catch (err) {
+                showToast(err.message, "error");
+                return;
+            }
+
             const payload = {
                 ...original,
                 status: "Paid",
@@ -1659,7 +1920,7 @@
                 transferAmount: safeNum(document.getElementById('transferAmount').value),
                 fee: safeNum(document.getElementById('fee').value),
                 chequeNo: document.getElementById('chequeNo').value || "-",
-                paySlip: document.getElementById('paySlip').value || "-",
+                paySlip: paySlipUrl,
                 payerName: currentUser.name
             };
 
@@ -1678,6 +1939,9 @@
             document.getElementById('pay-target-id').value = "";
             document.getElementById('payment-form').reset();
             document.getElementById('payment-form').classList.add('hidden');
+            // clear file uploader
+            const payUploader = document.getElementById('pay-slip-uploader');
+            if (payUploader) clearFileUploader(payUploader);
         }
 
         // ==============================================
@@ -1743,7 +2007,29 @@
             document.getElementById('vatType').value = r.vatType || 'none';
             document.getElementById('whtType').value = r.whtType || '0';
             document.getElementById('remarks').value = r.remarks === '-' ? '' : r.remarks;
-            document.getElementById('reqAttachment').value = r.reqAttachment === '-' ? '' : r.reqAttachment;
+
+            // โหลดไฟล์แนบเดิม (ถ้ามี) เข้า uploader
+            const reqUploader = document.getElementById('req-attachment-uploader');
+            const reqInput = document.getElementById('reqAttachment');
+            if (reqUploader && reqInput) {
+                if (r.reqAttachment && r.reqAttachment !== '-') {
+                    reqInput.value = r.reqAttachment;
+                    reqUploader._uploadedUrl = r.reqAttachment; // เก็บ URL เดิมไว้ ไม่ต้อง upload ซ้ำ
+                    // แสดง preview เป็น link ไปยังไฟล์เดิม
+                    const empty = reqUploader.querySelector('.file-uploader-empty');
+                    const preview = reqUploader.querySelector('.file-uploader-preview');
+                    const nameEl = reqUploader.querySelector('.file-name');
+                    const sizeEl = reqUploader.querySelector('.file-size');
+                    const linkEl = reqUploader.querySelector('.file-link');
+                    nameEl.textContent = r.reqAttachment.split('/').pop() || 'ไฟล์แนบ';
+                    sizeEl.textContent = '(ไฟล์เดิมที่อัพโหลดไว้แล้ว)';
+                    linkEl.href = r.reqAttachment;
+                    empty.classList.add('hidden');
+                    preview.classList.remove('hidden');
+                } else {
+                    clearFileUploader(reqUploader);
+                }
+            }
 
             calculateTotalSum();
         }
@@ -1836,7 +2122,7 @@
                             <p><b>วันครบกำหนดจ่าย:</b> <span class="text-rose-600 font-bold">${formatDateThai(r.dueDate)}</span></p>
                             <p><b>โครงการ:</b> ${r.project}</p>
                             <p><b>ผู้ขอตั้งเบิก:</b> ${r.recorder}</p>
-                            <p><b>เอกสารแนบตั้งเบิก:</b> ${r.reqAttachment && r.reqAttachment !== '-' ? `<a href="${r.reqAttachment}" target="_blank" class="text-indigo-600 hover:underline font-bold inline-flex items-center gap-1"><i class="fa-solid fa-file-pdf"></i> คลิกเพื่อเปิดไฟล์แนบ</a>` : '<span class="text-slate-400 italic">ไม่มีไฟล์แนบ</span>'}</p>
+                            <p><b>เอกสารแนบตั้งเบิก:</b> ${r.reqAttachment && r.reqAttachment !== '-' ? `<a href="${r.reqAttachment}" target="_blank" class="text-indigo-600 hover:underline font-bold inline-flex items-center gap-1"><i class="fa-solid fa-file-pdf"></i> ${r.reqAttachment.split('/').pop() || 'คลิกเพื่อเปิดไฟล์แนบ'}</a>` : '<span class="text-slate-400 italic">ไม่มีไฟล์แนบ</span>'}</p>
                         </div>
                     </div>
                     <div>
@@ -2021,7 +2307,7 @@
                     <div class="border-t border-dashed border-gray-400 my-4 pt-4"></div>
 
                     <h2 class="text-xs font-bold tracking-tight text-emerald-800 mb-2">ส่วนยืนยันผลธุรกรรมทำจ่ายจริง (สำหรับฝ่ายบัญชีและการเงิน)</h2>
-                    <div class="grid grid-cols-3 gap-4 border border-black p-3 rounded text-[10px] bg-slate-50 mb-6 leading-relaxed">
+                    <div class="grid grid-cols-3 gap-4 border border-black p-3 rounded text-[10px] bg-slate-50 mb-3 leading-relaxed">
                         <div>
                             <p><b>วันที่ทำธุรกรรมโอนจริง:</b> <span class="underline font-bold">${isPaid ? formatDateThai(r.paymentDate) : '...................................................'}</span></p>
                             <p class="mt-1"><b>ยอดเงินโอนจริง (บาท):</b> <span class="underline font-bold">${isPaid ? '฿' + safeNum(r.transferAmount).toLocaleString('th-TH') : '...................................................'}</span></p>
@@ -2035,6 +2321,8 @@
                             <p class="mt-1"><b>สถานะเอกสาร:</b> <span class="underline font-bold text-emerald-700">${r.status}</span></p>
                         </div>
                     </div>
+                    ${isPaid && r.paySlip && r.paySlip !== '-' ? `<p class="text-[10px] mb-6"><b>ลิงก์หลักฐานการโอน:</b> <a href="${r.paySlip}" target="_blank" class="text-blue-700 underline">${r.paySlip.split('/').pop()}</a></p>` : ''}
+                    ${r.reqAttachment && r.reqAttachment !== '-' ? `<p class="text-[10px] mb-6"><b>เอกสารแนบตั้งเบิก:</b> <a href="${r.reqAttachment}" target="_blank" class="text-blue-700 underline">${r.reqAttachment.split('/').pop()}</a></p>` : ''}
 
                     <div class="grid grid-cols-3 gap-4 text-[10px] text-center mt-8">
                         <div class="border border-black p-4 rounded">
