@@ -106,7 +106,7 @@
     <main class="max-w-7xl mx-auto px-4 md:px-6 py-6 flex-grow w-full flex flex-col gap-6">
         
         <!-- Login Form Screen -->
-        <section id="login-container" class="flex-grow flex items-center justify-center py-12">
+        <section id="login-container" class="hidden flex-grow flex items-center justify-center py-12">
             <div class="w-full max-w-sm bg-slate-900 border border-white/5 rounded-3xl p-8 shadow-2xl animate-slide-in relative overflow-hidden">
                 <div class="absolute -top-10 -right-10 w-40 h-40 bg-indigo-600/10 rounded-full blur-3xl"></div>
                 <div class="absolute -bottom-10 -left-10 w-40 h-40 bg-purple-600/10 rounded-full blur-3xl"></div>
@@ -138,7 +138,12 @@
                             <input type="password" id="password" required placeholder="ป้อนรหัสผ่าน" class="w-full bg-slate-950 border border-white/5 rounded-xl pl-9 pr-4 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition">
                         </div>
                     </div>
-                    <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs py-3 rounded-xl shadow-lg shadow-indigo-600/20 transition duration-200 mt-6">
+                    <div class="flex items-center justify-between pt-1">
+                        <button type="button" onclick="showSection('config-container')" class="text-[10px] text-indigo-400 hover:text-indigo-300 font-bold">
+                            <i class="fa-solid fa-gears mr-1"></i> ตั้งค่า API ใหม่ (สำหรับผู้ดูแล)
+                        </button>
+                    </div>
+                    <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs py-3 rounded-xl shadow-lg shadow-indigo-600/20 transition duration-200 mt-4">
                         <i class="fa-solid fa-arrow-right-to-bracket mr-1.5"></i> เข้าสู่ระบบ
                     </button>
                 </form>
@@ -178,6 +183,9 @@
                     <div class="flex gap-3 pt-2">
                         <button onclick="saveApiUrl()" class="flex-grow bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs py-2.5 rounded-xl transition duration-200">
                             <i class="fa-solid fa-floppy-disk mr-1.5"></i> บันทึกและเชื่อมต่อ
+                        </button>
+                        <button onclick="resetToDefaultApi()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 border border-white/5 px-4 py-2.5 rounded-xl text-xs transition duration-200 font-bold">
+                            คืนค่าเริ่มต้น
                         </button>
                     </div>
                 </div>
@@ -224,7 +232,7 @@
                     <button onclick="openFormModal()" class="flex-grow h-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs rounded-2xl shadow-lg shadow-indigo-600/15 flex items-center justify-center gap-2 transition duration-200">
                         <i class="fa-solid fa-plus-circle text-sm"></i> สร้างใบตั้งเบิก
                     </button>
-                    <!-- NEW: Import CSV Action Button -->
+                    <!-- Import CSV Action Button -->
                     <button onclick="openImportModal()" class="px-4 h-full bg-slate-900 hover:bg-slate-800 text-slate-300 border border-white/10 hover:border-white/20 font-bold text-xs rounded-2xl flex items-center justify-center gap-2 transition duration-200" title="นำเข้าข้อมูลจากไฟล์ CSV">
                         <i class="fa-solid fa-file-import text-sm text-indigo-400"></i> นำเข้า CSV
                     </button>
@@ -389,7 +397,7 @@
                         <div>
                             <label class="block text-[10px] uppercase tracking-wider font-bold text-slate-400 mb-1.5">รหัสของไฟล์ (Encoding)</label>
                             <select id="csv-encoding-select" onchange="reprocessFile()" class="w-full bg-slate-900 border border-white/5 rounded-xl px-3 py-2 text-xs text-white focus:outline-none">
-                                <option value="UTF-8">UTF-8 (สากล / ออกจากระบฐานข้อมูลสมัยใหม่)</option>
+                                <option value="UTF-8">UTF-8 (สากล / ออกจากระบบฐานข้อมูลสมัยใหม่)</option>
                                 <option value="TIS-620" selected>TIS-620 / Windows-874 (ไทย / ออกจาก Microsoft Excel)</option>
                             </select>
                             <p class="text-[9px] text-slate-500 mt-1">** หากอ่านชื่อไทยเป็นตัวอักษรต่างดาว หรือ สัญลักษณ์แปลก ๆ ให้เปลี่ยนกลับมาใช้ TIS-620 **</p>
@@ -403,7 +411,7 @@
                             เชื่อมโยงคอลัมน์ (Column Mapping)
                         </h4>
                         <p class="text-[10px] text-slate-400 mb-4 leading-relaxed">
-                            กำหนดว่าข้อมูลในคอลัมน์ไหนจากไฟล์ CSV ของคุณ จะสอดคล้องกับฟิลด์ตัวแปลของระบบ (ระบบจะแสกนและจับคู่สิ่งที่สอดคล้องกันให้ก่อนเป็นลำดับแรก)
+                            กำหนดว่าข้อมูลในคอลัมน์ไหนจากไฟล์ CSV ของคุณ จะสอดคล้องกับฟิลด์ตัวแปรของระบบ (ระบบจะแสกนและจับคู่สิ่งที่สอดคล้องกันให้ก่อนเป็นลำดับแรก)
                         </p>
                         
                         <!-- Grid of key mappings -->
@@ -655,7 +663,7 @@
                 </div>
                 <div>
                     <label class="block text-[10px] uppercase tracking-wider font-bold text-slate-400 mb-1">รหัสผ่านบัญชี *</label>
-                    <input type="text" id="user-form-password" required placeholder="ป้อนรหัสผ่าน" class="w-full bg-slate-950 border border-white/5 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-indigo-500 transition font-mono">
+                    <input type="text" id="user-form-password" required placeholder="ป้อนรหัสผ่าน" class="w-full bg-slate-950 border border-white/5 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-indigo-500 transition font-mono font-medium">
                 </div>
                 <div>
                     <label class="block text-[10px] uppercase tracking-wider font-bold text-slate-400 mb-1">ระดับสิทธิ์งาน (Role) *</label>
@@ -680,25 +688,52 @@
         </div>
     </div>
 
+    <!-- MODAL: Custom Confirm Dialog (แทนที่ Browser confirm) -->
+    <div id="confirm-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-slate-900 border border-white/10 rounded-3xl w-full max-w-sm p-6 animate-slide-in shadow-2xl relative overflow-hidden">
+            <div class="absolute -top-10 -right-10 w-24 h-24 bg-rose-500/10 rounded-full blur-2xl"></div>
+            <div class="w-12 h-12 bg-rose-500/10 border border-rose-500/20 rounded-2xl flex items-center justify-center mb-4">
+                <i class="fa-solid fa-triangle-exclamation text-rose-400 text-lg"></i>
+            </div>
+            <h3 class="text-sm font-bold text-white mb-2" id="confirm-title">ยืนยันการดำเนินการ</h3>
+            <p class="text-xs text-slate-400 mb-6 leading-relaxed" id="confirm-message">คุณต้องการทำรายการนี้จริงหรือไม่? การดำเนินการนี้จะไม่สามารถกู้กลับคืนได้</p>
+            <div class="flex items-center justify-end gap-3">
+                <button id="confirm-cancel-btn" class="bg-slate-950 hover:bg-slate-800 text-slate-400 px-4 py-2.5 rounded-xl text-xs transition font-bold border border-white/5">
+                    ยกเลิก
+                </button>
+                <button id="confirm-ok-btn" class="bg-rose-600 hover:bg-rose-500 text-white px-5 py-2.5 rounded-xl text-xs transition font-bold shadow-lg shadow-rose-600/15">
+                    ยืนยันคำสั่ง
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- TOAST Notification System Container -->
     <div id="toast-container" class="fixed bottom-6 right-6 z-50 flex flex-col gap-2 pointer-events-none"></div>
 
     <!-- ==================== MAIN JS CONTROLLER ==================== -->
     <script>
-        // System Global State Variables
-        let API_URL = localStorage.getItem("https://script.google.com/macros/s/AKfycbyhDhCXZRLq6ifwJ8JjE81PD2HkJ31VKdAylI7wYYJpuOChcglbEVdhrInhbriKT2p8/exec") || "";
+        // กำหนดค่า API เริ่มต้นของระบบงานคลาวด์บริษัท (ฝังลิงก์จากหน้า Google Sheets ของคุณ)
+        const DEFAULT_API_URL = "https://script.google.com/macros/s/AKfycbyhDhCXZRLq6ifwJ8JjE81PD2HkJ31VKdAylI7wYYJpuOChcglbEVdhrInhbriKT2p8/exec";
+        
+        // ดึงค่า URL หากเคย Override บันทึกไว้ หรือดึงค่า Default ไปใช้งานอัตโนมัติ (แก้ไขบั๊กเชื่อมต่อข้ามอุปกรณ์สำเร็จ)
+        let API_URL = localStorage.getItem("btc_finance_api_url") || DEFAULT_API_URL;
+        
         let currentUser = null;
         let requisitions = [];
         let users = [];
         let activeTab = "all"; // 'all', 'รออนุมัติ', 'อนุมัติแล้ว-รอจ่าย', 'จ่ายเงินแล้ว', 'ยกเลิก', 'users'
         let searchQuery = "";
         
+        // Confirm Modal Callback variable
+        let confirmCallback = null;
+
         // CSV Parsing Global state
         let currentCsvData = null; 
         let csvHeaders = [];
         let mappedFields = {};
 
-        // ลิสต์ตัวแปลของตารางตั้งเบิก (Requisitions Columns) ใน Google Sheets
+        // ลิสต์ตัวแปรของตารางตั้งเบิก (Requisitions Columns) ใน Google Sheets
         const SYSTEM_FIELDS = [
             { id: "ผู้บันทึก", label: "ผู้บันทึกข้อมูล", required: true },
             { id: "เลขที่เอกสาร", label: "เลขที่เอกสาร (IDหลัก)", required: true },
@@ -736,12 +771,37 @@
                 currentUser = JSON.parse(savedUser);
             }
             
+            // ตรวจสอบและดึงค่า API URL เดิมมาป้อนลงใน Input ฟอร์มโดยอัตโนมัติ
+            const apiInput = document.getElementById("api-url-input");
+            if (apiInput) {
+                apiInput.value = API_URL;
+            }
+
+            // ตั้งค่า Event Listeners สำหรับปุ่มคอนเฟิร์มแบบคัสตอม
+            document.getElementById("confirm-cancel-btn").addEventListener("click", () => {
+                document.getElementById("confirm-modal").classList.add("hidden");
+                confirmCallback = null;
+            });
+            document.getElementById("confirm-ok-btn").addEventListener("click", () => {
+                document.getElementById("confirm-modal").classList.add("hidden");
+                if (confirmCallback) confirmCallback();
+                confirmCallback = null;
+            });
+            
             checkSystemRoute();
         });
 
+        // ฟังก์ชันช่วยเรียกใช้ Confirm Modal แบบคัสตอม
+        function showCustomConfirm(title, message, onConfirm) {
+            document.getElementById("confirm-title").innerText = title;
+            document.getElementById("confirm-message").innerText = message;
+            document.getElementById("confirm-modal").classList.remove("hidden");
+            confirmCallback = onConfirm;
+        }
+
         // Determine which UI screen view to show
         function checkSystemRoute() {
-            // 1. ถ้าไม่ได้ระบุ API URL ให้ไปหน้า Config เสมอ
+            // 1. ถ้าไม่ได้ระบุ API URL (ซึ่งตอนแรกจะสแกนดึง DEFAULT_API_URL อัตโนมัติอยู่แล้ว) ให้ไปหน้าตั้งค่า
             if (!API_URL) {
                 showSection("config-container");
                 return;
@@ -803,6 +863,15 @@
             localStorage.setItem("btc_finance_api_url", url);
             showToast("บันทึกที่อยู่ระบบเซิร์ฟเวอร์คลาวด์สำเร็จ", "success");
             checkSystemRoute();
+        }
+
+        // Action: Reset API URL to default
+        function resetToDefaultApi() {
+            const apiInput = document.getElementById("api-url-input");
+            if (apiInput) {
+                apiInput.value = DEFAULT_API_URL;
+                showToast("คืนค่าที่อยู่การเชื่อมต่อคลาวด์เริ่มต้นสำเร็จแล้ว", "info");
+            }
         }
 
         // Action: Login Controller
@@ -1067,7 +1136,7 @@
             }
         }
 
-        // ==================== CSV IMPORT SYSTEM (NEW FEATURE) ====================
+        // ==================== CSV IMPORT SYSTEM ====================
         
         function openImportModal() {
             document.getElementById("import-modal").classList.remove("hidden");
@@ -1657,32 +1726,35 @@
             });
         }
 
-        // Action: Delete Requisition logic
+        // Action: Delete Requisition logic (Custom Confirm Modal)
         function deleteRequisition(id) {
-            const isConfirm = confirm(`คุณต้องการยืนยันที่จะลบใบตั้งเบิกเลขที่เอกสาร ${id} นี้ออกจากฐานข้อมูลหรือไม่?`);
-            if (!isConfirm) return;
+            showCustomConfirm(
+                "ยืนยันการลบใบตั้งเบิก",
+                `คุณต้องการยืนยันที่จะลบใบตั้งเบิกเลขที่เอกสาร ${id} นี้ออกจากฐานข้อมูลหรือไม่?`,
+                () => {
+                    showSection("global-loader");
+                    document.getElementById("loader-text").innerText = "กำลังลบข้อมูลใบเบิกออกจากคลาวด์...";
 
-            showSection("global-loader");
-            document.getElementById("loader-text").innerText = "กำลังลบข้อมูลใบเบิกออกจากคลาวด์...";
-
-            fetch(API_URL, {
-                method: "POST",
-                mode: "no-cors",
-                headers: { "Content-Type": "text/plain" },
-                body: JSON.stringify({
-                    action: "delete_requisition",
-                    id: id
-                })
-            })
-            .then(() => {
-                showToast("ลบใบเบิกเรียบร้อยแล้ว", "success");
-                setTimeout(fetchData, 1000);
-            })
-            .catch(err => {
-                console.error(err);
-                showToast("เกิดข้อผิดพลาดในการสั่งลบข้อมูลบนฐานข้อมูล", "error");
-                checkSystemRoute();
-            });
+                    fetch(API_URL, {
+                        method: "POST",
+                        mode: "no-cors",
+                        headers: { "Content-Type": "text/plain" },
+                        body: JSON.stringify({
+                            action: "delete_requisition",
+                            id: id
+                        })
+                    })
+                    .then(() => {
+                        showToast("ลบใบเบิกเรียบร้อยแล้ว", "success");
+                        setTimeout(fetchData, 1000);
+                    })
+                    .catch(err => {
+                        console.error(err);
+                        showToast("เกิดข้อผิดพลาดในการสั่งลบข้อมูลบนฐานข้อมูล", "error");
+                        checkSystemRoute();
+                    });
+                }
+            );
         }
 
         // ==================== USERS MANAGEMENT FOR ADMS ====================
@@ -1748,34 +1820,40 @@
             });
         }
 
+        // Action: Delete User Logic (Custom Confirm Modal)
         function deleteUser(id) {
             if (id === currentUser.id) {
                 showToast("คุณไม่สามารถลบบัญชีผู้ใช้ที่คุณกำลังสวมสิทธิ์ได้", "warning");
                 return;
             }
-            const isConfirm = confirm(`คุณแน่ใจว่าต้องการลบบัญชีผู้ใช้รหัสพนักงาน ${id} หรือไม่?`);
-            if (!isConfirm) return;
+            
+            showCustomConfirm(
+                "ยืนยันการลบบัญชีพนักงาน",
+                `คุณแน่ใจว่าต้องการลบบัญชีผู้ใช้รหัสพนักงาน ${id} ออกจากระบบคลาวด์จริงหรือไม่?`,
+                () => {
+                    showSection("global-loader");
+                    document.getElementById("loader-text").innerText = "กำลังลบข้อมูลพนักงานจากฐานข้อมูล...";
 
-            showSection("global-loader");
-
-            fetch(API_URL, {
-                method: "POST",
-                mode: "no-cors",
-                headers: { "Content-Type": "text/plain" },
-                body: JSON.stringify({
-                    action: "delete_user",
-                    id: id
-                })
-            })
-            .then(() => {
-                showToast("ลบบัญชีพนักงานเรียบร้อยแล้ว", "success");
-                setTimeout(fetchData, 1000);
-            })
-            .catch(err => {
-                console.error(err);
-                showToast("ไม่สำเร็จ ไม่สามารถเข้าถึงฐานข้อมูลพนักงานได้", "error");
-                checkSystemRoute();
-            });
+                    fetch(API_URL, {
+                        method: "POST",
+                        mode: "no-cors",
+                        headers: { "Content-Type": "text/plain" },
+                        body: JSON.stringify({
+                            action: "delete_user",
+                            id: id
+                        })
+                    })
+                    .then(() => {
+                        showToast("ลบบัญชีพนักงานเรียบร้อยแล้ว", "success");
+                        setTimeout(fetchData, 1000);
+                    })
+                    .catch(err => {
+                        console.error(err);
+                        showToast("ไม่สำเร็จ ไม่สามารถเข้าถึงฐานข้อมูลพนักงานได้", "error");
+                        checkSystemRoute();
+                    });
+                }
+            );
         }
 
         // Custom Notification Engine (Toast UI Alert)
