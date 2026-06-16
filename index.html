@@ -1081,12 +1081,20 @@
             return { bankName, accNo, bankBranch };
         }
 
-        // ดึงชื่อผู้รับ (ตัดรหัส 102-01-001 นำหน้า)
+        // แยกรหัสผู้รับเงิน + ชื่อจาก string "102-01-001 น.ส.สมพิศ เวสะมูลา"
+        // คืนค่า { code: "102-01-001", name: "102-01-001 น.ส.สมพิศ เวสะมูลา" }
         function parsePayeeName(str) {
-            if (!str) return '';
+            const result = { code: '', name: '' };
+            if (!str) return result;
             str = String(str).trim();
-            // ลบ pattern "xxx-yy-zzz " นำหน้า
-            return str.replace(/^\d+-\d+-\d+\s*/, '').trim();
+            const m = str.match(/^(\d+-\d+-\d+)\s+(.*)$/);
+            if (m) {
+                result.code = m[1];
+                result.name = str; // เก็บชื่อเต็ม (รวมรหัส)
+            } else {
+                result.name = str;
+            }
+            return result;
         }
 
         // ดึงชื่อ recorder (เอาคนแรก ก่อน "/")
@@ -1753,6 +1761,8 @@
                 const hasPayment = (getCol(r, COL.paymentDate) || '').trim() && (getCol(r, COL.paymentDate) || '').trim() !== '-';
                 const status = hasPayment ? "Paid" : "Pending Approval";
 
+                const payeeInfo = parsePayeeName(payeeNameRaw);
+
                 const record = {
                     id: 'req-' + docNo,
                     status: status,
@@ -1765,7 +1775,8 @@
                     recorder: recorderName,
                     requesterRole: 'เจ้าหน้าที่การเงิน', // assume เป็น admin ตอน import
                     expenseType: (getCol(r, COL.expenseType) || '').trim(),
-                    payeeName: parsePayeeName(payeeNameRaw),
+                    payeeName: payeeInfo.name,  // เก็บชื่อเต็ม (รวมรหัส)
+                    payeeCode: payeeInfo.code,  // เก็บรหัสแยก (ถ้ามี)
                     paymentMethod: (getCol(r, COL.paymentMethod) || 'โอน').trim(),
                     bankAccount: bankName,
                     accNo: accNo,
@@ -1796,9 +1807,10 @@
                 parsed.push(record);
 
                 // เก็บ master data ที่ unique
-                if (payeeNameRaw && !masterPayees.has(parsePayeeName(payeeNameRaw))) {
-                    masterPayees.set(parsePayeeName(payeeNameRaw), {
-                        payee_name: parsePayeeName(payeeNameRaw),
+                if (payeeNameRaw && !masterPayees.has(payeeInfo.name)) {
+                    masterPayees.set(payeeInfo.name, {
+                        payee_code: payeeInfo.code,
+                        payee_name: payeeInfo.name,
                         bank_name: bankName,
                         bank_account_no: accNo,
                         bank_branch: bankBranch
@@ -2600,6 +2612,7 @@
                 requesterRole: currentUser.role,
                 expenseType: document.getElementById('expenseType').value,
                 payeeName: document.getElementById('payeeName').value,
+                payeeCode: '',
                 paymentMethod: document.getElementById('paymentMethod').value,
                 bankAccount: document.getElementById('bankAccount').value,
                 accNo: document.getElementById('accNo').value,
