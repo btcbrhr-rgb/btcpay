@@ -1131,11 +1131,6 @@
         let GAS_API_URL = APP_CONFIG.apiUrl;
         const API_TOKEN = APP_CONFIG.apiToken;
 
-        // รายชื่อจำลองตั้งต้นระบบเมื่อยังไม่ได้เชื่อมต่อ Google Sheets
-        const defaultUsers = [
-            { id: "usr-1", name: "ผู้ดูแลระบบ การเงิน", username: "admin", password: "admin123", role: "เจ้าหน้าที่การเงิน", email: "admin@company.com" }
-        ];
-
         window.onload = function () {
             // ตั้งค่าวันที่จำลองปัจจุบัน
             updateDateOnHeader();
@@ -1149,8 +1144,8 @@
             // Initialize CSV import uploader
             initImportUploader();
 
-            // อ่านค่าจาก API หลังบ้านหรือจำลอง Local Storage
-            loadSystemData();
+            // เริ่มระบบ: ใช้ Google Sheets โดยตรง (ไม่มี Local Storage fallback)
+            initializeApp();
 
             window.addEventListener('click', (e) => {
                 const dropdown = document.getElementById('user-switch-dropdown');
@@ -1280,6 +1275,8 @@
                     body: JSON.stringify({
                         action: "upload_file",
                         token: API_TOKEN,
+                        sessionToken: currentSessionToken,
+                        userId: currentUserId,
                         fileName: file.name,
                         mimeType: file.type,
                         base64Data: base64,
@@ -1323,83 +1320,93 @@
         // ==============================================
         // CORE DATABASE CONNECTOR (เชื่อมต่อ Google Sheets)
         // ==============================================
-        async function loadSystemData() {
-            if (GAS_API_URL) {
-                document.getElementById('db-mode-badge').innerText = "โหมดใช้งาน: Google Sheets DB";
-                document.getElementById('db-mode-badge').className = "text-[10px] text-emerald-400 font-bold";
-                document.getElementById('main-loading-spinner').classList.remove('hidden');
-                
-                try {
-                    // ต้องมี session token ก่อนถึงจะดึง data ได้
-                    if (!currentSessionToken) {
-                        showLoginScreen();
-                        return;
-                    }
-                    const response = await fetchWithTimeout(
-                        `${GAS_API_URL}?action=get_data&token=${encodeURIComponent(API_TOKEN)}&sessionToken=${encodeURIComponent(currentSessionToken)}&userId=${encodeURIComponent(currentUserId)}`
-                    );
-                    const result = await response.json();
+        function restoreSessionFromStorage() {
+            const savedSessionToken = sessionStorage.getItem('current_session_token');
+            const savedUserId = sessionStorage.getItem('current_user_id');
+            const savedUser = sessionStorage.getItem('current_logged_in_user');
+            const savedExpiresAt = parseInt(sessionStorage.getItem('session_expires_at') || '0', 10);
 
-                    if (result.status === "success") {
-                        systemUsers = result.users;
-                        options_payees = result.payees;
-                        options_paymentTypes = result.paymentTypes;
-                        options_projects = result.projects;
-                        options_expenseTypes = result.expenseTypes;
-                        options_companies = result.companies;
-                        options_companyAccounts = result.companyAccounts;
-                        records = result.requisitions;
-
-                        showToast("เชื่อมต่อข้อมูล Google Sheets สำเร็จแล้ว!", "success");
-                    } else if (result.code === "SESSION_EXPIRED") {
-                        // session หมดอายุ
-                        handleSessionExpired();
-                        return;
-                    } else {
-                        throw new Error(result.message);
-                    }
-                } catch (err) {
-                    showToast("ไม่สามารถเชื่อมต่อ Sheets API ได้: " + err.message, "error");
-                    loadLocalStorageFallback();
-                } finally {
-                    document.getElementById('main-loading-spinner').classList.add('hidden');
-                }
-            } else {
-                document.getElementById('db-mode-badge').innerText = "โหมดใช้งาน: Local Storage";
-                document.getElementById('db-mode-badge').className = "text-[10px] text-slate-400 font-medium";
-                loadLocalStorageFallback();
-            }
-
-            // ตรวจสอบเซสชันผู้ใช้งานเดิม
-            const savedSessionToken = localStorage.getItem('current_session_token');
-            const savedUserId = localStorage.getItem('current_user_id');
-            const savedUser = localStorage.getItem('current_logged_in_user');
-            const savedExpiresAt = parseInt(localStorage.getItem('session_expires_at') || '0', 10);
-
-            // ตรวจสอบว่า session ยังไม่หมดอายุ
             if (savedSessionToken && savedUserId && savedUser && Date.now() / 1000 < savedExpiresAt) {
                 try {
                     currentSessionToken = savedSessionToken;
                     currentUserId = savedUserId;
                     currentUser = JSON.parse(savedUser);
                     startSessionWatcher();
-                    showAppScreen();
+                    return true;
                 } catch (e) {
-                    showLoginScreen();
+                    return false;
                 }
-            } else {
-                // session หมดอายุ → clear
-                if (savedSessionToken) clearLocalSession();
+            }
+            return false;
+        }
+
+        async function initializeApp() {
+            // บังคับต้องตั้งค่า API ให้ครบ
+            if (!GAS_API_URL || !API_TOKEN) {
                 showLoginScreen();
+                showToast("ยังไม่ได้ตั้งค่าเชื่อมต่อ Google Sheets (apiUrl/apiToken)", "error");
+                return;
+            }
+
+            // แสดง badge ว่าใช้ DB จริง
+            document.getElementById('db-mode-badge').innerText = "โหมดใช้งาน: Google Sheets DB";
+            document.getElementById('db-mode-badge').className = "text-[10px] text-emerald-400 font-bold";
+
+            // คืนค่าจาก sessionStorage
+            const ok = restoreSessionFromStorage();
+            if (ok) {
+                showAppScreen();
+                await loadSystemData();
+            } else {
+                clearLocalSession();
+                showLoginScreen();
+            }
+        }
+
+        async function loadSystemData() {
+            document.getElementById('main-loading-spinner').classList.remove('hidden');
+
+            try {
+                // ต้องมี session token ก่อนถึงจะดึง data ได้
+                if (!currentSessionToken || !currentUserId) {
+                    handleSessionExpired();
+                    return;
+                }
+                const response = await fetchWithTimeout(
+                    `${GAS_API_URL}?action=get_data&token=${encodeURIComponent(API_TOKEN)}&sessionToken=${encodeURIComponent(currentSessionToken)}&userId=${encodeURIComponent(currentUserId)}`
+                );
+                const result = await response.json();
+
+                if (result.status === "success") {
+                    systemUsers = result.users;
+                    options_payees = result.payees;
+                    options_paymentTypes = result.paymentTypes;
+                    options_projects = result.projects;
+                    options_expenseTypes = result.expenseTypes;
+                    options_companies = result.companies;
+                    options_companyAccounts = result.companyAccounts;
+                    records = result.requisitions;
+
+                    updateUserInterface();
+                } else if (result.code === "SESSION_EXPIRED") {
+                    handleSessionExpired();
+                    return;
+                } else {
+                    throw new Error(result.message);
+                }
+            } catch (err) {
+                showToast("ไม่สามารถเชื่อมต่อ Sheets API ได้: " + err.message, "error");
+            } finally {
+                document.getElementById('main-loading-spinner').classList.add('hidden');
             }
         }
 
         // Clear local session (logout cleanup)
         function clearLocalSession() {
-            localStorage.removeItem('current_session_token');
-            localStorage.removeItem('current_user_id');
-            localStorage.removeItem('current_logged_in_user');
-            localStorage.removeItem('session_expires_at');
+            sessionStorage.removeItem('current_session_token');
+            sessionStorage.removeItem('current_user_id');
+            sessionStorage.removeItem('current_logged_in_user');
+            sessionStorage.removeItem('session_expires_at');
             currentSessionToken = null;
             currentUserId = null;
             currentUser = null;
@@ -1413,7 +1420,7 @@
         function startSessionWatcher() {
             if (_sessionCheckInterval) clearInterval(_sessionCheckInterval);
             _sessionCheckInterval = setInterval(() => {
-                const expiresAt = parseInt(localStorage.getItem('session_expires_at') || '0', 10);
+                const expiresAt = parseInt(sessionStorage.getItem('session_expires_at') || '0', 10);
                 if (Date.now() / 1000 >= expiresAt) {
                     showToast('เซสชันหมดอายุ กรุณาเข้าสู่ระบบใหม่', 'warning');
                     handleSessionExpired();
@@ -1428,47 +1435,18 @@
             showToast('เซสชันหมดอายุ กรุณาเข้าสู่ระบบใหม่', 'warning');
         }
 
-        // ทำการ Fallback ไปยังหน่วยความจำจำลองของเบราว์เซอร์
-        function loadLocalStorageFallback() {
-            // หมายเหตุ: ในโหมด Local Storage password จะถูกเก็บไว้ใน localStorage
-            // เพราะระบบ fallback นี้ใช้สำหรับทดสอบอย่างเดียว
-            systemUsers = JSON.parse(localStorage.getItem('system_users')) || [...defaultUsers];
-            options_payees = JSON.parse(localStorage.getItem('options_payees')) || [];
-            options_paymentTypes = JSON.parse(localStorage.getItem('options_payment_types')) || [
-                { payment_type: "โอนเงินผ่านธนาคาร", status: "Active" },
-                { payment_type: "เช็คธนาคาร", status: "Active" },
-                { payment_type: "เงินสด", status: "Active" }
-            ];
-            options_projects = JSON.parse(localStorage.getItem('options_projects')) || [
-                { project_code: "P-001", project_name: "งานก่อสร้างอาคารสำนักงานใหญ่" }
-            ];
-            options_expenseTypes = JSON.parse(localStorage.getItem('options_expense_types')) || [
-                { expense_type: "ค่าวัสดุก่อสร้าง" },
-                { expense_type: "ค่าแรงผู้รับเหมา" },
-                { expense_type: "ค่าขนส่ง" },
-                { expense_type: "ค่าใช้จ่ายสำนักงาน" }
-            ];
-            // เพิ่มบริษัทบุรีรัมย์ธงชัยก่อสร้างเป็นบริษัทแรกในระบบเริ่มต้น
-            options_companies = JSON.parse(localStorage.getItem('options_companies')) || [
-                { company_id: "BRTC", company_name: "บริษัท บุรีรัมย์ธงชัยก่อสร้าง จำกัด" }
-            ];
-            options_companyAccounts = JSON.parse(localStorage.getItem('options_company_accounts')) || [
-                { account_id: "ACC-01", bank_name: "ธนาคารกสิกรไทย", account_no: "123-4-56789-0" }
-            ];
-            records = JSON.parse(localStorage.getItem('upgraded_financial_records_v1')) || [];
-        }
-
         // ==============================================
         // REFRESH DATA (in-place, ไม่ reload ทั้งหน้า)
         // ==============================================
         async function refreshDataInPlace() {
-            if (!GAS_API_URL) {
-                // Local mode: render จาก state ปัจจุบัน
-                updateUserInterface();
-                return;
-            }
             try {
-                const response = await fetchWithTimeout(`${GAS_API_URL}?action=get_data&token=${encodeURIComponent(API_TOKEN)}`);
+                if (!currentSessionToken || !currentUserId) {
+                    handleSessionExpired();
+                    return;
+                }
+                const response = await fetchWithTimeout(
+                    `${GAS_API_URL}?action=get_data&token=${encodeURIComponent(API_TOKEN)}&sessionToken=${encodeURIComponent(currentSessionToken)}&userId=${encodeURIComponent(currentUserId)}`
+                );
                 const result = await response.json();
                 if (result.status === "success" || result.status === "warning") {
                     systemUsers = result.users || [];
@@ -1480,6 +1458,8 @@
                     options_companyAccounts = result.companyAccounts || [];
                     records = result.requisitions || [];
                     updateUserInterface();
+                } else if (result.code === "SESSION_EXPIRED") {
+                    handleSessionExpired();
                 }
             } catch (err) {
                 showToast("ไม่สามารถดึงข้อมูลใหม่: " + err.message, "error");
@@ -1488,26 +1468,7 @@
 
         // บันทึกการส่งคำร้องเขียนทับฐานข้อมูลปลายทาง
         async function apiPostRequest(action, data) {
-            if (!GAS_API_URL) {
-                if (action === "save_requisition") {
-                    const idx = records.findIndex(r => r.id === data.id);
-                    if (idx !== -1) records[idx] = data;
-                    else records.unshift(data);
-                    localStorage.setItem('upgraded_financial_records_v1', JSON.stringify(records));
-                } else if (action === "delete_requisition") {
-                    records = records.filter(r => r.id !== data);
-                    localStorage.setItem('upgraded_financial_records_v1', JSON.stringify(records));
-                } else if (action === "save_user") {
-                    const idx = systemUsers.findIndex(u => u.id === data.id);
-                    if (idx !== -1) systemUsers[idx] = data;
-                    else systemUsers.push(data);
-                    localStorage.setItem('system_users', JSON.stringify(systemUsers));
-                } else if (action === "delete_user") {
-                    systemUsers = systemUsers.filter(u => u.id !== data);
-                    localStorage.setItem('system_users', JSON.stringify(systemUsers));
-                }
-                return { status: "success", message: "บันทึกใน Local Storage สำเร็จ" };
-            }
+            if (!GAS_API_URL) return { status: "error", message: "ยังไม่ได้ตั้งค่าเชื่อมต่อ Google Sheets" };
 
             try {
                 // import action ใช้ timeout ยาวกว่า (180s/chunk) เพราะต้องเขียน sheet จริง
@@ -1548,7 +1509,7 @@
         // เรียกใช้จาก DevTools Console เท่านั้น: initializeDatabaseOnSheet(true)
         async function initializeDatabaseOnSheet(force) {
             try {
-                const response = await fetchWithTimeout(`${GAS_API_URL}?action=init&force=${!!force}`);
+                const response = await fetchWithTimeout(`${GAS_API_URL}?action=init&force=${!!force}&token=${encodeURIComponent(API_TOKEN)}`);
                 const result = await response.json();
                 if (result.status === "success") {
                     showToast(result.message, "success");
@@ -2064,15 +2025,16 @@
                         currentSessionToken = result.sessionToken;
                         currentUserId = result.userId;
                         currentUser = { name: result.name, role: result.role, email: result.email };
-                        localStorage.setItem('current_session_token', result.sessionToken);
-                        localStorage.setItem('current_user_id', result.userId);
-                        localStorage.setItem('current_logged_in_user', JSON.stringify(currentUser));
-                        localStorage.setItem('session_expires_at', result.expiresAt);
+                        sessionStorage.setItem('current_session_token', result.sessionToken);
+                        sessionStorage.setItem('current_user_id', result.userId);
+                        sessionStorage.setItem('current_logged_in_user', JSON.stringify(currentUser));
+                        sessionStorage.setItem('session_expires_at', result.expiresAt);
 
                         errorAlert.classList.add('hidden');
                         showToast(`เข้าสู่ระบบสำเร็จ ยินดีต้อนรับคุณ ${currentUser.name}`, 'success');
                         startSessionWatcher();
                         showAppScreen();
+                        loadSystemData();
                     } else {
                         errorMsg.innerText = result.message || 'ชื่อผู้ใช้งานหรือรหัสผ่านไม่ถูกต้อง';
                         errorAlert.classList.remove('hidden');
@@ -2080,30 +2042,9 @@
                     }
                 })
                 .catch(err => {
-                    // Fallback: ลอง local check (กรณี Sheets API ล่ม แต่ยังมี localStorage cache)
-                    if (GAS_API_URL) {
-                        // มี API แต่ fail → ไม่ให้ login
-                        errorMsg.innerText = 'ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์: ' + err.message;
-                        errorAlert.classList.remove('hidden');
-                        showToast('ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้', 'error');
-                    } else {
-                        // ไม่มี API → local mode (fallback)
-                        const user = systemUsers.find(u =>
-                            u.username.toLowerCase() === usernameInput.toLowerCase() &&
-                            u.password === passwordInput
-                        );
-                        if (user) {
-                            currentUser = { name: user.name, role: user.role, email: user.email };
-                            localStorage.setItem('current_logged_in_user', JSON.stringify(currentUser));
-                            errorAlert.classList.add('hidden');
-                            showToast('เข้าสู่ระบบ (Local Mode) สำเร็จ', 'success');
-                            showAppScreen();
-                        } else {
-                            errorMsg.innerText = 'ชื่อผู้ใช้งานหรือรหัสผ่านไม่ถูกต้อง';
-                            errorAlert.classList.remove('hidden');
-                            showToast('เข้าสู่ระบบไม่สำเร็จ', 'error');
-                        }
-                    }
+                    errorMsg.innerText = 'ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์: ' + err.message;
+                    errorAlert.classList.remove('hidden');
+                    showToast('ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้', 'error');
                 })
                 .finally(() => {
                     submitBtn.disabled = false;
@@ -2113,27 +2054,7 @@
 
         // เรียก backend login (POST)
         async function attemptLogin(username, password) {
-            // ถ้าไม่มี API URL (Local Storage mode) → ตรวจ local + เตือน user
-            if (!GAS_API_URL) {
-                // local mode: ใช้ default users
-                const user = systemUsers.find(u =>
-                    u.username && u.username.toLowerCase() === username.toLowerCase() &&
-                    u.password === password
-                );
-                if (user) {
-                    return {
-                        status: 'success',
-                        sessionToken: 'local_' + Date.now(),
-                        userId: user.id,
-                        name: user.name,
-                        role: user.role,
-                        email: user.email || '',
-                        expiresAt: Math.floor(Date.now() / 1000) + 8 * 60 * 60,
-                        _isLocal: true
-                    };
-                }
-                return { status: 'error', message: 'ชื่อผู้ใช้งานหรือรหัสผ่านไม่ถูกต้อง' };
-            }
+            if (!GAS_API_URL) throw new Error("ยังไม่ได้ตั้งค่าเชื่อมต่อ Google Sheets");
 
             const response = await fetchWithTimeout(GAS_API_URL, {
                 method: "POST",
@@ -3280,14 +3201,10 @@
         }
 
         function switchUserSessionById(id) {
-            const u = systemUsers.find(user => user.id === id);
-            if (u) {
-                currentUser = { name: u.name, role: u.role, email: u.email };
-                localStorage.setItem('current_logged_in_user', JSON.stringify(currentUser));
-                updateUserInterface();
-                showToast(`สลับสิทธิ์การใช้งานเป็นคุณ: ${u.name}`, 'success');
-                document.getElementById('user-switch-dropdown').classList.add('hidden');
-            }
+            // โหมดใช้งานจริง: สิทธิ์ผูกกับ session ที่ออกจาก backend
+            // จึงไม่อนุญาตให้ "สลับผู้ใช้" โดยไม่ทำการ login ใหม่
+            document.getElementById('user-switch-dropdown').classList.add('hidden');
+            showToast('หากต้องการเปลี่ยนผู้ใช้ กรุณาออกจากระบบแล้วเข้าสู่ระบบใหม่', 'warning');
         }
 
         // ==============================================
