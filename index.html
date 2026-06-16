@@ -1132,6 +1132,28 @@
             return String(str).split('/')[0].trim();
         }
 
+        // ==============================================
+        // RECORD SORTING (ใหม่ → เก่า)
+        // ==============================================
+        function toDateMs(dateStr) {
+            if (!dateStr || dateStr === '-') return 0;
+            const d = new Date(dateStr);
+            const ms = d.getTime();
+            return Number.isFinite(ms) ? ms : 0;
+        }
+
+        function sortRecordsNewToOld(arr) {
+            if (!Array.isArray(arr)) return arr;
+            arr.sort((a, b) => {
+                const aKey = toDateMs(a?.paymentDate) || toDateMs(a?.recordDate) || toDateMs(a?.dueDate);
+                const bKey = toDateMs(b?.paymentDate) || toDateMs(b?.recordDate) || toDateMs(b?.dueDate);
+                if (bKey !== aKey) return bKey - aKey;
+                // tie-breaker: docNo (มาก → น้อย)
+                return String(b?.docNo || '').localeCompare(String(a?.docNo || ''), 'th');
+            });
+            return arr;
+        }
+
         let records = [];
         let systemUsers = [];
         let options_payees = [];
@@ -1415,6 +1437,7 @@
                     options_companies = result.companies;
                     options_companyAccounts = result.companyAccounts;
                     records = result.requisitions;
+                    sortRecordsNewToOld(records);
 
                     updateUserInterface();
                 } else if (result.code === "SESSION_EXPIRED") {
@@ -1486,6 +1509,7 @@
                     options_companies = result.companies || [];
                     options_companyAccounts = result.companyAccounts || [];
                     records = result.requisitions || [];
+                    sortRecordsNewToOld(records);
                     updateUserInterface();
                 } else if (result.code === "SESSION_EXPIRED") {
                     handleSessionExpired();
