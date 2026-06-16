@@ -168,11 +168,7 @@
 
             <!-- SETTINGS & PROFILE -->
             <div class="p-4 border-t border-slate-900 bg-slate-950">
-                <button id="sidebar-config-btn" onclick="openConfigModal()" class="hidden w-full mb-3 bg-slate-900 hover:bg-slate-850 text-slate-300 border border-slate-800 text-[10px] py-2 rounded-lg flex items-center justify-center gap-1.5 transition-all">
-                    <i class="fa-solid fa-cloud-arrow-up text-indigo-400"></i> ตั้งค่าระบบ Google Sheets
-                </button>
-
-                <div class="relative pt-4 border-t border-slate-900">
+                <div class="relative pt-2 border-t border-slate-900">
                     <div onclick="toggleUserDropdown()" class="bg-slate-900 hover:bg-slate-850 border border-slate-800 px-3.5 py-2.5 rounded-xl flex items-center justify-between transition-all cursor-pointer select-none">
                         <div class="flex items-center gap-2.5">
                             <div class="w-8 h-8 rounded-lg bg-indigo-600 text-white flex items-center justify-center font-bold text-xs" id="user-avatar-text">--</div>
@@ -183,7 +179,7 @@
                         </div>
                         <i class="fa-solid fa-chevron-up text-[10px] text-slate-400"></i>
                     </div>
-                    
+
                     <div id="user-switch-dropdown" class="hidden absolute bottom-full left-0 mb-2 w-full bg-white rounded-xl shadow-xl border border-slate-200 py-2 text-slate-800 z-50 text-xs"></div>
                 </div>
             </div>
@@ -258,7 +254,7 @@
 
                     <!-- DASHBOARD STATS -->
                     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                        <div onclick="viewCategoryRecords('Pending Approval')" class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between cursor-pointer hover:shadow-md hover:scale-[1.01] transition-all group">
+                        <button type="button" onclick="viewCategoryRecords('Pending Approval')" class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between cursor-pointer hover:shadow-md hover:scale-[1.01] transition-all group text-left w-full">
                             <div class="space-y-1">
                                 <p class="text-[11px] text-slate-400 font-semibold uppercase tracking-wider">รออนุมัติ (Pending)</p>
                                 <h3 id="stat-pending-approval" class="text-xl font-bold text-orange-600">0 รายการ</h3>
@@ -267,8 +263,8 @@
                             <div class="bg-orange-50 p-3.5 rounded-xl text-orange-600">
                                 <i class="fa-solid fa-file-invoice text-lg animate-pulse"></i>
                             </div>
-                        </div>
-                        <div onclick="viewCategoryRecords('Approved')" class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between cursor-pointer hover:shadow-md hover:scale-[1.01] transition-all group">
+                        </button>
+                        <button type="button" onclick="viewCategoryRecords('Approved')" class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between cursor-pointer hover:shadow-md hover:scale-[1.01] transition-all group text-left w-full">
                             <div class="space-y-1">
                                 <p class="text-[11px] text-slate-400 font-semibold uppercase tracking-wider">อนุมัติแล้ว/รอทำจ่าย (Approved)</p>
                                 <h3 id="stat-pending-records" class="text-xl font-bold text-amber-600">0 รายการ</h3>
@@ -277,8 +273,8 @@
                             <div class="bg-amber-50 p-3.5 rounded-xl text-amber-600">
                                 <i class="fa-solid fa-hourglass-half text-lg"></i>
                             </div>
-                        </div>
-                        <div onclick="viewCategoryRecords('Paid')" class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between cursor-pointer hover:shadow-md hover:scale-[1.01] transition-all group">
+                        </button>
+                        <button type="button" onclick="viewCategoryRecords('Paid')" class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between cursor-pointer hover:shadow-md hover:scale-[1.01] transition-all group text-left w-full">
                             <div class="space-y-1">
                                 <p class="text-[11px] text-slate-400 font-semibold uppercase tracking-wider">ยอดโอนจ่ายสำเร็จ (Paid)</p>
                                 <h3 id="stat-transferred" class="text-xl font-bold text-emerald-600">฿0.00</h3>
@@ -287,7 +283,7 @@
                             <div class="bg-emerald-50 p-3.5 rounded-xl text-emerald-600">
                                 <i class="fa-solid fa-circle-check text-lg"></i>
                             </div>
-                        </div>
+                        </button>
                         <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
                             <div class="space-y-1">
                                 <p class="text-[11px] text-slate-400 font-semibold uppercase tracking-wider">ยอดภาษีสะสม (VAT & WHT)</p>
@@ -428,22 +424,8 @@
                                             <th class="py-2 pr-4 text-right w-48">จำนวนเงิน (บาท)</th>
                                         </tr>
                                     </thead>
-                                    <tbody class="divide-y divide-slate-100">
-                                        <script>
-                                            for(let i=1; i<=10; i++) {
-                                                document.write(`
-                                                    <tr class="hover:bg-slate-50/50">
-                                                        <td class="py-2 text-center text-xs font-semibold text-slate-400 bg-slate-50">${i}</td>
-                                                        <td class="py-1 pl-4">
-                                                            <input type="text" id="desc${i}" class="w-full px-3 py-1.5 text-sm bg-white border border-slate-200 rounded-lg focus:outline-none" placeholder="ระบุรายละเอียด">
-                                                        </td>
-                                                        <td class="py-1 pl-4 pr-1">
-                                                            <input type="number" step="0.01" id="amount${i}" oninput="calculateTotalSum()" class="w-full px-3 py-1.5 text-sm bg-white border border-slate-200 rounded-lg text-right font-medium" placeholder="0.00">
-                                                        </td>
-                                                    </tr>
-                                                `);
-                                            }
-                                        </script>
+                                    <tbody class="divide-y divide-slate-100" id="req-items-tbody">
+                                        <!-- 10 แถวจะถูกสร้างด้วย DOM API ใน buildRequisitionItemsRows() -->
                                     </tbody>
                                 </table>
 
@@ -733,33 +715,7 @@
         </div>
     </div>
 
-    <!-- CONFIGURATION GOOGLE SHEETS API MODAL -->
-    <div id="config-modal" class="hidden fixed inset-0 z-50 bg-slate-950/60 flex items-center justify-center p-4 backdrop-blur-sm">
-        <div class="bg-white rounded-2xl border border-slate-200 shadow-xl w-full max-w-lg p-6 space-y-4 text-xs sm:text-sm">
-            <div class="flex justify-between items-center border-b pb-3">
-                <h3 class="font-bold text-sm text-slate-800"><i class="fa-solid fa-cloud-arrow-up text-indigo-600 mr-1.5"></i> ตั้งค่าระบบ Google Sheets Database API</h3>
-                <button onclick="closeConfigModal()" class="text-slate-400 hover:text-slate-600 text-lg"><i class="fa-solid fa-xmark"></i></button>
-            </div>
-            <div class="space-y-3">
-                <div>
-                    <label class="block text-xs font-semibold text-slate-600 mb-1">Google Apps Script Web App URL</label>
-                    <input type="text" id="config-api-url" class="w-full p-2.5 border rounded-lg focus:ring-2 focus:ring-indigo-500/20 text-xs font-mono" placeholder="https://script.google.com/macros/s/xxxx/exec">
-                    <p class="text-[10px] text-slate-400 mt-1">ปล่อยว่างไว้เพื่อเปลี่ยนไปใช้ฐานข้อมูลสำรองภายในเครื่องเบราว์เซอร์ (Local Storage)</p>
-                </div>
-            </div>
-            <div class="bg-slate-50 p-3 rounded-lg border flex flex-col space-y-2">
-                <span class="font-bold text-slate-800 text-xs"><i class="fa-solid fa-magic-wand-sparkles mr-1 text-indigo-500"></i> ตัวสร้างตารางฐานข้อมูลอัตโนมัติ (Auto-Builder)</span>
-                <p class="text-[10px] text-slate-500 leading-normal">วาง URL เว็บแอปที่ Deploy เป็นสิทธิ์ Anyone สำเร็จแล้ว จากนั้นคลิกที่ปุ่มเริ่มต้นฐานข้อมูล ระบบจะเขียนแผ่นงานและสเปรดชีตจัดโครงสร้างทะเบียน WHT, คู่ค้า, และโครงการลงในไฟล์ Google Sheets ให้โดยอัตโนมัติ</p>
-                <button type="button" onclick="initializeDatabaseOnSheet()" id="init-db-btn" class="w-full bg-slate-900 hover:bg-slate-850 text-white font-bold py-2 rounded-lg text-xs transition-all">
-                    <i class="fa-solid fa-database mr-1"></i> เริ่มสร้าง Sheets และตารางฐานข้อมูลอัตโนมัติ
-                </button>
-            </div>
-            <div class="flex justify-end gap-2 pt-2 border-t">
-                <button type="button" onclick="closeConfigModal()" class="px-4 py-2 border rounded-lg font-semibold text-slate-600 hover:bg-slate-100">ปิด</button>
-                <button type="button" onclick="saveConfigSettings()" class="px-4 py-2 bg-indigo-600 text-white rounded-lg font-semibold hover:bg-indigo-700">บันทึกการตั้งค่า</button>
-            </div>
-        </div>
-    </div>
+    <!-- CONFIGURATION GOOGLE SHEETS API MODAL (ลบออกแล้ว — API URL ฝังใน APP_CONFIG โดยตรง) -->
 
     <!-- DETAIL MODAL & MANAGER ACTION FORM -->
     <div id="detail-modal" class="hidden fixed inset-0 z-50 bg-slate-900/50 flex items-center justify-center p-4 backdrop-blur-sm">
@@ -827,6 +783,21 @@
 
     <!-- CORE SYSTEM JAVASCRIPT WITH APPROVAL WORKFLOW -->
     <script>
+        // ==============================================
+        // UTILITY HELPERS
+        // ==============================================
+        // แปลงค่าเป็นตัวเลขอย่างปลอดภัย (กัน NaN/Infinity)
+        function safeNum(val, fallback = 0) {
+            const n = parseFloat(val);
+            return (isNaN(n) || !isFinite(n)) ? fallback : n;
+        }
+
+        // แปลงค่าเป็น string อย่างปลอดภัย (กัน null/undefined → crash ตอน .toLowerCase)
+        function safeStr(val, fallback = '') {
+            if (val === null || val === undefined) return fallback;
+            return String(val);
+        }
+
         let records = [];
         let systemUsers = [];
         let options_payees = [];
@@ -839,8 +810,18 @@
         let currentUser = null;
         let currentTodoScope = 'all';
 
-        // Google Sheets API Web App URL ตัวเริ่มต้น
-        let GAS_API_URL = localStorage.getItem("gas_api_url") || "https://script.google.com/macros/s/AKfycbyhDhCXZRLq6ifwJ8JjE81PD2HkJ31VKdAylI7wYYJpuOChcglbEVdhrInhbriKT2p8/exec";
+        // ==============================================
+        // CONFIG (ฝังค่าตายตัว — เปิดเว็บ = เชื่อมต่อ API ทันที)
+        // ==============================================
+        // เปลี่ยน URL/Token ที่นี่ที่เดียว ทุกเครื่องที่เปิดเว็บนี้จะใช้ค่าเดียวกัน
+        const APP_CONFIG = {
+            // Google Apps Script Web App URL (ฝังตรงๆ ไม่ต้องตั้งค่า)
+            apiUrl: "https://script.google.com/macros/s/AKfycbyhDhCXZRLq6ifwJ8JjE81PD2HkJ31VKdAylI7wYYJpuOChcglbEVdhrInhbriKT2p8/exec",
+            // Token ต้องตรงกับ SHARED_API_TOKEN ใน Code.gs
+            apiToken: "BRTC-FIN-2026-DEV-TOKEN"
+        };
+        let GAS_API_URL = APP_CONFIG.apiUrl;
+        const API_TOKEN = APP_CONFIG.apiToken;
 
         // รายชื่อจำลองตั้งต้นระบบเมื่อยังไม่ได้เชื่อมต่อ Google Sheets
         const defaultUsers = [
@@ -850,7 +831,10 @@
         window.onload = function () {
             // ตั้งค่าวันที่จำลองปัจจุบัน
             updateDateOnHeader();
-            
+
+            // สร้าง 10 แถวของตาราง requisition ด้วย DOM API (แทน document.write)
+            buildRequisitionItemsRows();
+
             // อ่านค่าจาก API หลังบ้านหรือจำลอง Local Storage
             loadSystemData();
 
@@ -860,6 +844,27 @@
                     dropdown.classList.add('hidden');
                 }
             });
+        }
+
+        // สร้าง 10 แถวของตารางรายการสินค้า/บริการ (แทน document.write เดิม)
+        function buildRequisitionItemsRows() {
+            const tbody = document.getElementById('req-items-tbody');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+            for (let i = 1; i <= 10; i++) {
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-slate-50/50';
+                tr.innerHTML = `
+                    <td class="py-2 text-center text-xs font-semibold text-slate-400 bg-slate-50">${i}</td>
+                    <td class="py-1 pl-4">
+                        <input type="text" id="desc${i}" class="w-full px-3 py-1.5 text-sm bg-white border border-slate-200 rounded-lg focus:outline-none" placeholder="ระบุรายละเอียด">
+                    </td>
+                    <td class="py-1 pl-4 pr-1">
+                        <input type="number" step="0.01" id="amount${i}" oninput="calculateTotalSum()" class="w-full px-3 py-1.5 text-sm bg-white border border-slate-200 rounded-lg text-right font-medium" placeholder="0.00">
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            }
         }
 
         // ==============================================
@@ -872,7 +877,7 @@
                 document.getElementById('main-loading-spinner').classList.remove('hidden');
                 
                 try {
-                    const response = await fetchWithTimeout(`${GAS_API_URL}?action=get_data`);
+                    const response = await fetchWithTimeout(`${GAS_API_URL}?action=get_data&token=${encodeURIComponent(APP_CONFIG.apiToken)}`);
                     const result = await response.json();
                     
                     if (result.status === "success") {
@@ -917,6 +922,8 @@
 
         // ทำการ Fallback ไปยังหน่วยความจำจำลองของเบราว์เซอร์
         function loadLocalStorageFallback() {
+            // หมายเหตุ: ในโหมด Local Storage password จะถูกเก็บไว้ใน localStorage
+            // เพราะระบบ fallback นี้ใช้สำหรับทดสอบอย่างเดียว
             systemUsers = JSON.parse(localStorage.getItem('system_users')) || [...defaultUsers];
             options_payees = JSON.parse(localStorage.getItem('options_payees')) || [];
             options_paymentTypes = JSON.parse(localStorage.getItem('options_payment_types')) || [
@@ -941,6 +948,34 @@
                 { account_id: "ACC-01", bank_name: "ธนาคารกสิกรไทย", account_no: "123-4-56789-0" }
             ];
             records = JSON.parse(localStorage.getItem('upgraded_financial_records_v1')) || [];
+        }
+
+        // ==============================================
+        // REFRESH DATA (in-place, ไม่ reload ทั้งหน้า)
+        // ==============================================
+        async function refreshDataInPlace() {
+            if (!GAS_API_URL) {
+                // Local mode: render จาก state ปัจจุบัน
+                updateUserInterface();
+                return;
+            }
+            try {
+                const response = await fetchWithTimeout(`${GAS_API_URL}?action=get_data&token=${encodeURIComponent(API_TOKEN)}`);
+                const result = await response.json();
+                if (result.status === "success" || result.status === "warning") {
+                    systemUsers = result.users || [];
+                    options_payees = result.payees || [];
+                    options_paymentTypes = result.paymentTypes || [];
+                    options_projects = result.projects || [];
+                    options_expenseTypes = result.expenseTypes || [];
+                    options_companies = result.companies || [];
+                    options_companyAccounts = result.companyAccounts || [];
+                    records = result.requisitions || [];
+                    updateUserInterface();
+                }
+            } catch (err) {
+                showToast("ไม่สามารถดึงข้อมูลใหม่: " + err.message, "error");
+            }
         }
 
         // บันทึกการส่งคำร้องเขียนทับฐานข้อมูลปลายทาง
@@ -970,7 +1005,7 @@
                 const response = await fetchWithTimeout(GAS_API_URL, {
                     method: "POST",
                     headers: { "Content-Type": "text/plain" },
-                    body: JSON.stringify({ action: action, data: data, id: data.id || data })
+                    body: JSON.stringify({ action: action, data: data, id: data.id || data, token: API_TOKEN })
                 });
                 return await response.json();
             } catch (err) {
@@ -978,43 +1013,34 @@
             }
         }
 
-        // ระบบ Auto-Builder สร้าง Sheets อัตโนมัติจากหน้าบ้าน
-        async function initializeDatabaseOnSheet() {
-            const apiUrlInput = document.getElementById('config-api-url').value.trim();
-            if (!apiUrlInput) {
-                showToast("กรุณากรอก Web App URL ก่อนเริ่มสร้างแผ่นงาน", "error");
-                return;
-            }
-
-            const confirmBtn = document.getElementById('init-db-btn');
-            confirmBtn.innerText = "กำลังสร้างตารางใน Google Sheet...";
-            confirmBtn.disabled = true;
-
+        // ระบบ Auto-Builder สร้าง Sheets อัตโนมัติ
+        // เรียกใช้จาก DevTools Console เท่านั้น: initializeDatabaseOnSheet(true)
+        async function initializeDatabaseOnSheet(force) {
             try {
-                const response = await fetchWithTimeout(`${apiUrlInput}?action=init`);
+                const response = await fetchWithTimeout(`${GAS_API_URL}?action=init&force=${!!force}`);
                 const result = await response.json();
                 if (result.status === "success") {
                     showToast(result.message, "success");
-                    GAS_API_URL = apiUrlInput;
-                    localStorage.setItem("gas_api_url", GAS_API_URL);
-                    setTimeout(() => { location.reload(); }, 2000);
+                    setTimeout(() => location.reload(), 2000);
                 } else {
-                    showToast("ไม่สามารถสร้างฐานข้อมูลได้: " + result.message, "error");
+                    showToast("ผลลัพธ์: " + result.message, result.status === "warning" ? "warning" : "error");
                 }
+                return result;
             } catch (err) {
-                showToast("เกิดข้อผิดพลาดในการเรียกใช้ API: " + err.message, "error");
-            } finally {
-                confirmBtn.innerText = "เริ่มสร้าง Sheets และตารางฐานข้อมูลอัตโนมัติ";
-                confirmBtn.disabled = false;
+                showToast("เกิดข้อผิดพลาด: " + err.message, "error");
+                return { status: "error", message: err.message };
             }
         }
 
-        // ดึงข้อมูลพร้อมการจับเวลาหมดอายุ (Timeout)
+        // ดึงข้อมูลพร้อมการจับเวลาหมดอายุ (Timeout) ใช้ AbortController ป้องกัน request ค้าง
         function fetchWithTimeout(url, options = {}, timeout = 15000) {
-            return Promise.race([
-                fetch(url, options),
-                new Promise((_, reject) => setTimeout(() => reject(new Error('เชื่อมต่อหมดเวลา (Timeout)')), timeout))
-            ]);
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), timeout);
+
+            // ผูก signal เข้ากับ options
+            const fetchOptions = { ...options, signal: controller.signal };
+
+            return fetch(url, fetchOptions).finally(() => clearTimeout(timeoutId));
         }
 
         // ==============================================
@@ -1074,23 +1100,6 @@
                 currentUser = null;
                 showLoginScreen();
             });
-        }
-
-        function openConfigModal() {
-            document.getElementById('config-api-url').value = GAS_API_URL;
-            document.getElementById('config-modal').classList.remove('hidden');
-        }
-
-        function closeConfigModal() {
-            document.getElementById('config-modal').classList.add('hidden');
-        }
-
-        function saveConfigSettings() {
-            const urlInput = document.getElementById('config-api-url').value.trim();
-            localStorage.setItem("gas_api_url", urlInput);
-            closeConfigModal();
-            showToast("บันทึกช่องทาง Google Sheets API แล้ว กำลังโหลดข้อมูลใหม่...", "success");
-            setTimeout(() => { location.reload(); }, 1500);
         }
 
         function changeSystemRefDate(val) {
@@ -1156,6 +1165,16 @@
         // ==============================================
         // UI RE-RENDERING & DATA POPULATION
         // ==============================================
+        // คลิกที่ stat card เพื่อกรองตารางตามสถานะ
+        function viewCategoryRecords(status) {
+            switchTab('list');
+            const statusFilter = document.getElementById('status-filter');
+            if (statusFilter) {
+                statusFilter.value = status;
+                renderTable();
+            }
+        }
+
         function updateUserInterface() {
             if (!currentUser) return;
 
@@ -1166,14 +1185,6 @@
             document.getElementById('welcome-user-name').innerText = currentUser.name;
             document.getElementById('welcome-user-role').innerText = currentUser.role;
             document.getElementById('recorder').value = currentUser.name;
-
-            // คัดกรองควบคุมแสดงผลปุ่มตั้งค่าระบบชีตในแถบ Sidebar ตามสิทธิ์พนักงาน
-            const configBtn = document.getElementById('sidebar-config-btn');
-            if (currentUser.role === 'เจ้าหน้าที่การเงิน') {
-                configBtn.classList.remove('hidden');
-            } else {
-                configBtn.classList.add('hidden');
-            }
 
             // เติมข้อมูล Dropdowns ต่างๆ จากตัวเลือกชีต
             populateDropdown('company', options_companies, 'company_id', 'company_name');
@@ -1206,6 +1217,8 @@
         }
 
         function onPayeeChange(payeeId) {
+            // กัน crash กรณี options_payees ยังโหลดไม่เสร็จ
+            if (!Array.isArray(options_payees) || options_payees.length === 0) return;
             const payee = options_payees.find(p => p.payee_id === payeeId);
             if (payee) {
                 document.getElementById('bankAccountDisplay').value = `${payee.bank_name} (${payee.bank_account_no})`;
@@ -1265,10 +1278,10 @@
                 if (r.status === "Pending Approval") pendingCount++;
                 else if (r.status === "Approved") {
                     approvedCount++;
-                    approvedSum += parseFloat(r.totalAmount) || 0;
+                    approvedSum += safeNum(r.totalAmount);
                 } else if (r.status === "Paid") {
-                    paidSum += parseFloat(r.transferAmount) || 0;
-                    taxSum += (parseFloat(r.vatAmount) || 0) + (parseFloat(r.whtAmount) || 0);
+                    paidSum += safeNum(r.transferAmount);
+                    taxSum += safeNum(r.vatAmount) + safeNum(r.whtAmount);
                 }
             });
 
@@ -1289,7 +1302,7 @@
             const expenseSums = {};
 
             paidRecords.forEach(r => {
-                const amount = parseFloat(r.totalAmount) || 0;
+                const amount = safeNum(r.totalAmount);
                 expenseSums[r.expenseType] = (expenseSums[r.expenseType] || 0) + amount;
                 totalSpent += amount;
             });
@@ -1325,25 +1338,51 @@
         // ==============================================
         // TO-DO LIST & DETERMINATION
         // ==============================================
+        // สลับ filter scope (ทั้งหมด / เกินกำหนด)
+        function filterTodoScope(scope) {
+            currentTodoScope = scope;
+            // อัปเดต UI ปุ่ม
+            document.querySelectorAll('#todo-filters button').forEach(btn => {
+                btn.className = 'px-2.5 py-1.5 text-xs font-semibold rounded-lg text-slate-600';
+            });
+            const activeBtn = document.getElementById(`todo-filter-${scope}`);
+            if (activeBtn) {
+                activeBtn.className = 'px-2.5 py-1.5 text-xs font-semibold rounded-lg bg-white text-slate-800 shadow-sm';
+            }
+            renderTodoListDashboard();
+        }
+
         function renderTodoListDashboard() {
             const container = document.getElementById('todo-items-container');
             if (!container) return;
 
-            const approvedRecords = getAuthorizedRecords().filter(r => r.status === 'Approved');
+            const refDateStr = document.getElementById('system-ref-date').value;
+            const refDate = new Date(refDateStr);
+
+            let approvedRecords = getAuthorizedRecords().filter(r => r.status === 'Approved');
+
+            // กรองตาม scope
+            if (currentTodoScope === 'overdue') {
+                approvedRecords = approvedRecords.filter(r => {
+                    if (!r.dueDate) return false;
+                    return new Date(r.dueDate) < refDate;
+                });
+            }
+
             container.innerHTML = '';
 
             if (approvedRecords.length === 0) {
                 container.innerHTML = `
                     <div class="p-8 text-center text-slate-400">
                         <i class="fa-solid fa-clipboard-check text-2xl text-emerald-500 mb-2"></i>
-                        <p class="text-xs">ไม่มีรายการตั้งเบิกที่อนุมัติค้างจ่ายในขณะนี้</p>
+                        <p class="text-xs">${currentTodoScope === 'overdue' ? 'ไม่มีรายการเกินกำหนด' : 'ไม่มีรายการตั้งเบิกที่อนุมัติค้างจ่ายในขณะนี้'}</p>
                     </div>
                 `;
                 return;
             }
 
             approvedRecords.forEach(r => {
-                const isOverdue = new Date(r.dueDate) < new Date(document.getElementById('system-ref-date').value);
+                const isOverdue = r.dueDate && new Date(r.dueDate) < refDate;
                 const badgeClass = isOverdue ? 'bg-rose-100 text-rose-800' : 'bg-slate-100 text-slate-700';
                 const overdueLabel = isOverdue ? 'เกินกำหนด' : 'รอบครบกำหนด';
 
@@ -1358,7 +1397,7 @@
                         <p class="text-slate-500 mt-1">ผู้รับ: ${r.payeeName} | ครบกำหนด: ${formatDateThai(r.dueDate)}</p>
                     </div>
                     <div class="text-right flex items-center gap-2.5">
-                        <span class="font-extrabold text-slate-900">฿${parseFloat(r.totalAmount).toLocaleString('th-TH', {minimumFractionDigits: 2})}</span>
+                        <span class="font-extrabold text-slate-900">฿${safeNum(r.totalAmount).toLocaleString('th-TH', {minimumFractionDigits: 2})}</span>
                         ${currentUser.role === 'เจ้าหน้าที่การเงิน' ? `
                             <button onclick="triggerPaymentConfirmation('${r.id}')" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-3 py-1.5 rounded-lg">
                                 ทำจ่าย
@@ -1383,9 +1422,10 @@
             const authorizedSet = getAuthorizedRecords();
 
             const filtered = authorizedSet.filter(r => {
-                const matchesSearch = r.docNo.toLowerCase().includes(searchVal) ||
-                                       r.recorder.toLowerCase().includes(searchVal) ||
-                                       r.payeeName.toLowerCase().includes(searchVal);
+                const docNo = safeStr(r.docNo).toLowerCase();
+                const recorder = safeStr(r.recorder).toLowerCase();
+                const payeeName = safeStr(r.payeeName).toLowerCase();
+                const matchesSearch = docNo.includes(searchVal) || recorder.includes(searchVal) || payeeName.includes(searchVal);
                 const matchesStatus = statusFilter === 'ALL' || r.status === statusFilter;
                 return matchesSearch && matchesStatus;
             });
@@ -1414,11 +1454,11 @@
                         </div>
                     </td>
                     <td class="py-3 px-2 text-center">${statusBadge}</td>
-                    <td class="py-3 px-2 font-bold font-mono text-center text-slate-800">${r.docNo}</td>
+                    <td class="py-3 px-2 font-bold font-mono text-center text-slate-800">${r.docNo || '-'}</td>
                     <td class="py-3 px-2">${formatDateThai(r.recordDate)}</td>
-                    <td class="py-3 px-2">${r.company}</td>
-                    <td class="py-3 px-2">${r.payeeName}</td>
-                    <td class="py-3 px-2 text-right font-extrabold text-slate-900">฿${parseFloat(r.totalAmount).toLocaleString('th-TH', {minimumFractionDigits: 2})}</td>
+                    <td class="py-3 px-2">${r.company || '-'}</td>
+                    <td class="py-3 px-2">${r.payeeName || '-'}</td>
+                    <td class="py-3 px-2 text-right font-extrabold text-slate-900">฿${safeNum(r.totalAmount).toLocaleString('th-TH', {minimumFractionDigits: 2})}</td>
                     <td class="py-3 px-2 text-slate-500">${r.paymentDate ? formatDateThai(r.paymentDate) : '-'}</td>
                 `;
                 tbody.appendChild(tr);
@@ -1429,11 +1469,11 @@
         function calculateTotalSum() {
             let subtotal = 0;
             for (let i = 1; i <= 10; i++) {
-                subtotal += parseFloat(document.getElementById(`amount${i}`).value) || 0;
+                subtotal += safeNum(document.getElementById(`amount${i}`).value);
             }
 
             const vatType = document.getElementById('vatType').value;
-            const whtPercent = parseFloat(document.getElementById('whtType').value) || 0;
+            const whtPercent = safeNum(document.getElementById('whtType').value);
 
             let vat = 0, wht = 0, grandTotal = 0;
 
@@ -1470,13 +1510,13 @@
         async function handleRequisitionSubmit(e) {
             e.preventDefault();
             const total = calculateTotalSum();
-            
+
             const isEdit = document.getElementById('req-edit-id').value !== "";
             const id = isEdit ? document.getElementById('req-edit-id').value : 'req-' + Date.now();
 
             const payload = {
                 id: id,
-                status: isEdit ? "Pending Approval" : "Pending Approval",
+                status: "Pending Approval",
                 docNo: document.getElementById('docNo').value,
                 refDocNo: document.getElementById('refDocNo').value || "-",
                 company: document.getElementById('company').value,
@@ -1484,16 +1524,17 @@
                 recordDate: document.getElementById('recordDate').value,
                 dueDate: document.getElementById('dueDate').value,
                 recorder: currentUser.name,
+                requesterRole: currentUser.role,
                 expenseType: document.getElementById('expenseType').value,
                 payeeName: document.getElementById('payeeName').value,
                 paymentMethod: document.getElementById('paymentMethod').value,
                 bankAccount: document.getElementById('bankAccount').value,
                 accNo: document.getElementById('accNo').value,
-                subtotalAmount: parseFloat(document.getElementById('subtotalAmount').value),
+                subtotalAmount: safeNum(document.getElementById('subtotalAmount').value),
                 vatType: document.getElementById('vatType').value,
-                vatAmount: parseFloat(document.getElementById('vatAmount').value),
+                vatAmount: safeNum(document.getElementById('vatAmount').value),
                 whtType: document.getElementById('whtType').value,
-                whtAmount: parseFloat(document.getElementById('whtAmount').value),
+                whtAmount: safeNum(document.getElementById('whtAmount').value),
                 totalAmount: total,
                 remarks: document.getElementById('remarks').value || "-",
                 reqAttachment: document.getElementById('reqAttachment').value.trim() || "-",
@@ -1509,17 +1550,18 @@
 
             for (let i = 1; i <= 10; i++) {
                 payload[`desc${i}`] = document.getElementById(`desc${i}`).value.trim() || "";
-                payload[`amount${i}`] = parseFloat(document.getElementById(`amount${i}`).value) || 0;
+                payload[`amount${i}`] = safeNum(document.getElementById(`amount${i}`).value);
             }
 
             showToast("กำลังส่งข้อมูลไปยังฐานข้อมูล...", "info");
             const result = await apiPostRequest("save_requisition", payload);
-            
+
             if (result.status === "success") {
                 showToast(result.message, "success");
                 clearReqForm();
                 cancelReqEdit();
-                setTimeout(() => { location.reload(); }, 1500);
+                // re-render in-place แทน reload (เร็วกว่า + ไม่เสีย scroll position)
+                await refreshDataInPlace();
             } else {
                 showToast("ล้มเหลว: " + result.message, "error");
             }
@@ -1567,7 +1609,7 @@
             approvedRecords.forEach(r => {
                 const opt = document.createElement('option');
                 opt.value = r.id;
-                opt.innerText = `[${r.docNo}] ยอด ฿${parseFloat(r.totalAmount).toLocaleString('th-TH')} - ผู้รับ: ${r.payeeName}`;
+                opt.innerText = `[${r.docNo}] ยอด ฿${safeNum(r.totalAmount).toLocaleString('th-TH')} - ผู้รับ: ${r.payeeName}`;
                 selectEl.appendChild(opt);
             });
         }
@@ -1588,10 +1630,10 @@
             document.getElementById('ref-display-company').innerText = r.company;
             document.getElementById('ref-display-payee').innerText = r.payeeName;
             document.getElementById('ref-display-bank').innerText = `${r.bankAccount} (เลขที่: ${r.accNo})`;
-            document.getElementById('ref-display-amount').innerText = '฿' + parseFloat(r.totalAmount).toLocaleString('th-TH', {minimumFractionDigits: 2});
+            document.getElementById('ref-display-amount').innerText = '฿' + safeNum(r.totalAmount).toLocaleString('th-TH', {minimumFractionDigits: 2});
             document.getElementById('ref-display-dueDate').innerText = formatDateThai(r.dueDate);
 
-            document.getElementById('transferAmount').value = parseFloat(r.totalAmount).toFixed(2);
+            document.getElementById('transferAmount').value = safeNum(r.totalAmount).toFixed(2);
             document.getElementById('paymentDate').value = document.getElementById('system-ref-date').value;
             formScreen.classList.remove('hidden');
         }
@@ -1600,7 +1642,7 @@
             const id = document.getElementById('pay-target-id').value;
             const r = records.find(rec => rec.id === id);
             if (r) {
-                document.getElementById('transferAmount').value = parseFloat(r.totalAmount).toFixed(2);
+                document.getElementById('transferAmount').value = safeNum(r.totalAmount).toFixed(2);
             }
         }
 
@@ -1614,8 +1656,8 @@
                 ...original,
                 status: "Paid",
                 paymentDate: document.getElementById('paymentDate').value,
-                transferAmount: parseFloat(document.getElementById('transferAmount').value) || 0,
-                fee: parseFloat(document.getElementById('fee').value) || 0,
+                transferAmount: safeNum(document.getElementById('transferAmount').value),
+                fee: safeNum(document.getElementById('fee').value),
                 chequeNo: document.getElementById('chequeNo').value || "-",
                 paySlip: document.getElementById('paySlip').value || "-",
                 payerName: currentUser.name
@@ -1626,7 +1668,7 @@
             if (result.status === "success") {
                 showToast("บันทึกธุรกรรมจ่ายเงินเรียบร้อยแล้ว!", "success");
                 cancelPaymentProcess();
-                setTimeout(() => { location.reload(); }, 1500);
+                await refreshDataInPlace();
             } else {
                 showToast("เกิดข้อผิดพลาด: " + result.message, "error");
             }
@@ -1657,7 +1699,7 @@
             if (result.status === "success") {
                 showToast("ทำรายการอนุมัติสำเร็จเรียบร้อย!", "success");
                 closeModal();
-                setTimeout(() => { location.reload(); }, 1500);
+                await refreshDataInPlace();
             } else {
                 showToast("ล้มเหลว: " + result.message, "error");
             }
@@ -1669,14 +1711,14 @@
         function triggerEditRequisition(id) {
             const r = records.find(rec => rec.id === id);
             if (!r) return;
-            
+
             closeModal();
             switchTab('req');
-            
+
             document.getElementById('req-edit-id').value = r.id;
             document.getElementById('req-editing-alert').classList.remove('hidden');
             document.getElementById('req-submit-btn').innerHTML = '<i class="fa-regular fa-floppy-disk mr-1"></i> บันทึกการแก้ไข';
-            
+
             // เติมข้อมูลลงช่อง Input หลัก
             document.getElementById('docNo').value = r.docNo;
             document.getElementById('refDocNo').value = r.refDocNo === '-' ? '' : r.refDocNo;
@@ -1686,22 +1728,23 @@
             document.getElementById('dueDate').value = r.dueDate;
             document.getElementById('expenseType').value = r.expenseType;
             document.getElementById('payeeName').value = r.payeeName;
-            
+
             // เรียกฟังก์ชันดึงรายละเอียดสมุดบัญชีคู่ค้าอัตโนมัติ
             onPayeeChange(r.payeeName);
             document.getElementById('paymentMethod').value = r.paymentMethod;
-            
+
             // รายการแถวสิบแถว
             for (let i = 1; i <= 10; i++) {
                 document.getElementById(`desc${i}`).value = r[`desc${i}`] || '';
-                document.getElementById(`amount${i}`).value = r[`amount${i}`] ? parseFloat(r[`amount${i}`]).toFixed(2) : '';
+                const amt = safeNum(r[`amount${i}`]);
+                document.getElementById(`amount${i}`).value = amt > 0 ? amt.toFixed(2) : '';
             }
-            
+
             document.getElementById('vatType').value = r.vatType || 'none';
             document.getElementById('whtType').value = r.whtType || '0';
             document.getElementById('remarks').value = r.remarks === '-' ? '' : r.remarks;
             document.getElementById('reqAttachment').value = r.reqAttachment === '-' ? '' : r.reqAttachment;
-            
+
             calculateTotalSum();
         }
 
@@ -1776,7 +1819,7 @@
                         <tr class="border-b">
                             <td class="py-2 text-center text-slate-400 font-bold">${i}</td>
                             <td class="py-2 pl-4">${r[`desc${i}`] || '-'}</td>
-                            <td class="py-2 pr-4 text-right font-bold">฿${parseFloat(r[`amount${i}`] || 0).toLocaleString('th-TH', {minimumFractionDigits: 2})}</td>
+                            <td class="py-2 pr-4 text-right font-bold">฿${safeNum(r[`amount${i}`]).toLocaleString('th-TH', {minimumFractionDigits: 2})}</td>
                         </tr>
                     `;
                 }
@@ -1818,19 +1861,19 @@
                             <tfoot>
                                 <tr class="font-bold">
                                     <td colspan="2" class="py-2 text-right">ยอดรวมก่อนแวต (Subtotal):</td>
-                                    <td class="py-2 text-right">฿${parseFloat(r.subtotalAmount).toLocaleString('th-TH', {minimumFractionDigits: 2})}</td>
+                                    <td class="py-2 text-right">฿${safeNum(r.subtotalAmount).toLocaleString('th-TH', {minimumFractionDigits: 2})}</td>
                                 </tr>
                                 <tr class="text-blue-600">
                                     <td colspan="2" class="py-1 text-right">ภาษีมูลค่าเพิ่ม (VAT 7%):</td>
-                                    <td class="py-1 text-right">+ ฿${parseFloat(r.vatAmount || 0).toLocaleString('th-TH', {minimumFractionDigits: 2})}</td>
+                                    <td class="py-1 text-right">+ ฿${safeNum(r.vatAmount).toLocaleString('th-TH', {minimumFractionDigits: 2})}</td>
                                 </tr>
                                 <tr class="text-rose-600">
                                     <td colspan="2" class="py-1 text-right pb-2 border-b">ภาษีหัก ณ ที่จ่าย (WHT):</td>
-                                    <td class="py-1 text-right pb-2 border-b">- ฿${parseFloat(r.whtAmount || 0).toLocaleString('th-TH', {minimumFractionDigits: 2})}</td>
+                                    <td class="py-1 text-right pb-2 border-b">- ฿${safeNum(r.whtAmount).toLocaleString('th-TH', {minimumFractionDigits: 2})}</td>
                                 </tr>
                                 <tr class="text-sm font-black text-slate-900">
                                     <td colspan="2" class="py-2.5 text-right">ยอดสุทธิที่ต้องจ่ายจริง:</td>
-                                    <td class="py-2.5 text-right">฿${parseFloat(r.totalAmount).toLocaleString('th-TH', {minimumFractionDigits: 2})}</td>
+                                    <td class="py-2.5 text-right">฿${safeNum(r.totalAmount).toLocaleString('th-TH', {minimumFractionDigits: 2})}</td>
                                 </tr>
                             </tfoot>
                         </table>
@@ -1894,7 +1937,7 @@
                         <tr class="border-b text-[11px] border-black">
                             <td class="py-1.5 text-center border-r border-black font-bold">${validIndex++}</td>
                             <td class="py-1.5 px-2 border-r border-black">${r[`desc${i}`] || '-'}</td>
-                            <td class="py-1.5 px-2 text-right font-semibold">${parseFloat(r[`amount${i}`] || 0).toLocaleString('th-TH', {minimumFractionDigits: 2})}</td>
+                            <td class="py-1.5 px-2 text-right font-semibold">${safeNum(r[`amount${i}`]).toLocaleString('th-TH', {minimumFractionDigits: 2})}</td>
                         </tr>
                     `;
                 }
@@ -1981,10 +2024,10 @@
                     <div class="grid grid-cols-3 gap-4 border border-black p-3 rounded text-[10px] bg-slate-50 mb-6 leading-relaxed">
                         <div>
                             <p><b>วันที่ทำธุรกรรมโอนจริง:</b> <span class="underline font-bold">${isPaid ? formatDateThai(r.paymentDate) : '...................................................'}</span></p>
-                            <p class="mt-1"><b>ยอดเงินโอนจริง (บาท):</b> <span class="underline font-bold">${isPaid ? '฿' + parseFloat(r.transferAmount).toLocaleString('th-TH') : '...................................................'}</span></p>
+                            <p class="mt-1"><b>ยอดเงินโอนจริง (บาท):</b> <span class="underline font-bold">${isPaid ? '฿' + safeNum(r.transferAmount).toLocaleString('th-TH') : '...................................................'}</span></p>
                         </div>
                         <div>
-                            <p><b>ค่าธรรมเนียมธุรกรรม:</b> <span class="underline">${isPaid ? '฿' + parseFloat(r.fee).toLocaleString('th-TH') : '...................................................'}</span></p>
+                            <p><b>ค่าธรรมเนียมธุรกรรม:</b> <span class="underline">${isPaid ? '฿' + safeNum(r.fee).toLocaleString('th-TH') : '...................................................'}</span></p>
                             <p class="mt-1"><b>เลขเช็ค / รหัสอ้างอิงสลิป:</b> <span class="underline font-mono">${isPaid ? r.chequeNo : '...................................................'}</span></p>
                         </div>
                         <div>
@@ -2022,7 +2065,7 @@
                 const result = await apiPostRequest("delete_requisition", id);
                 if (result.status === "success") {
                     showToast(result.message, "success");
-                    setTimeout(() => { location.reload(); }, 1500);
+                    await refreshDataInPlace();
                 } else {
                     showToast("ล้มเหลว: " + result.message, "error");
                 }
@@ -2131,7 +2174,7 @@
         async function handleUserSubmit(e) {
             e.preventDefault();
             const id = document.getElementById('user-edit-id').value || 'usr-' + Date.now();
-            
+
             const payload = {
                 id: id,
                 name: document.getElementById('user-fullname').value.trim(),
@@ -2146,7 +2189,7 @@
             if (result.status === "success") {
                 showToast("บันทึกข้อมูลพนักงานเสร็จสิ้น!", "success");
                 cancelUserEdit();
-                setTimeout(() => { location.reload(); }, 1500);
+                await refreshDataInPlace();
             } else {
                 showToast("ล้มเหลว: " + result.message, "error");
             }
@@ -2171,7 +2214,7 @@
                 const result = await apiPostRequest("delete_user", id);
                 if (result.status === "success") {
                     showToast("ลบบัญชีผู้ใช้ออกเรียบร้อย", "success");
-                    setTimeout(() => { location.reload(); }, 1500);
+                    await refreshDataInPlace();
                 } else {
                     showToast("เกิดข้อผิดพลาด: " + result.message, "error");
                 }
