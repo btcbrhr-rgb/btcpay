@@ -1066,16 +1066,19 @@
             return isNaN(n) ? 0 : n;
         }
 
-        // ดึงชื่อธนาคาร + เลขบัญชี + สาขา จาก string "กรุงเทพ  เลขที่บัญชี : xxx  สาขา : xxx"
+        // ดึงชื่อธนาคาร + เลขบัญชี + สาขา จาก string "กรุงเทพ  เลขที่บัญชี : 633-7-024340  สาขา : โลตัสหนองสองห้อง"
         function parseBankInfo(str) {
-            if (!str) return { bankName: '', accNo: '' };
+            if (!str) return { bankName: '', accNo: '', bankBranch: '' };
             str = String(str).trim();
             // ดึงเลขที่บัญชี
             const accMatch = str.match(/เลขที่บัญชี\s*:?\s*([\d\-]+)/);
             const accNo = accMatch ? accMatch[1] : '';
+            // ดึงสาขา
+            const branchMatch = str.match(/สาขา\s*:?\s*([^\s].*?)(?:\s*$|\s{2,})/);
+            const bankBranch = branchMatch ? branchMatch[1].trim() : '';
             // ชื่อธนาคาร = คำแรก (ก่อน space แรก)
             const bankName = str.split(/\s{2,}|\s+/)[0] || '';
-            return { bankName, accNo };
+            return { bankName, accNo, bankBranch };
         }
 
         // ดึงชื่อผู้รับ (ตัดรหัส 102-01-001 นำหน้า)
@@ -1729,8 +1732,21 @@
                 const recorderName = parseRecorder(getCol(r, COL.recorder));
                 const payeeNameRaw = getCol(r, COL.payeeName);
                 const bankStr = getCol(r, COL.bankAccount);
-                const { bankName, accNo: derivedAccNo } = parseBankInfo(bankStr);
-                const accNo = (getCol(r, COL.accNo) || derivedAccNo || '').trim();
+                // Parse ธนาคาร + เลขบัญชีปลายทาง + สาขา จากคอลัมน์ "บัญชีธนาคาร"
+                const { bankName, accNo: derivedAccNo, bankBranch } = parseBankInfo(bankStr);
+                // accNo ในฐานข้อมูล = เลขบัญชีปลายทาง (parse จาก "บัญชีธนาคาร" เท่านั้น)
+                const accNo = (derivedAccNo || '').trim();
+                // เลขที่เช็ค/อ้างอิงสลิป = เลขที่บัญชีบริษัท + " เช็ค " + เลขที่เช็ค
+                const companyAcc = (getCol(r, COL.accNo) || '').trim();
+                const cheque = (getCol(r, COL.chequeNo) || '').trim();
+                let chequeNo = '-';
+                if (companyAcc && companyAcc !== '-' && cheque && cheque !== '-') {
+                    chequeNo = `${companyAcc} เช็ค ${cheque}`;
+                } else if (companyAcc && companyAcc !== '-') {
+                    chequeNo = companyAcc;
+                } else if (cheque && cheque !== '-') {
+                    chequeNo = cheque;
+                }
 
                 // ถ้ามี paySlip แต่ดูเหมือนยังไม่จ่าย (ไม่มี paymentDate) → status = Pending
                 // ถ้ามี paymentDate → status = Paid
@@ -1767,7 +1783,7 @@
                     transferAmount: parseThaiNumber(getCol(r, COL.transferAmount)),
                     fee: parseThaiNumber(getCol(r, COL.fee)),
                     payerName: hasPayment ? recorderName : '',
-                    chequeNo: (getCol(r, COL.chequeNo) || '-').trim() || '-',
+                    chequeNo: chequeNo,
                     paySlip: (getCol(r, COL.paySlip) || '-').trim() || '-'
                 };
 
@@ -1784,7 +1800,8 @@
                     masterPayees.set(parsePayeeName(payeeNameRaw), {
                         payee_name: parsePayeeName(payeeNameRaw),
                         bank_name: bankName,
-                        bank_account_no: accNo
+                        bank_account_no: accNo,
+                        bank_branch: bankBranch
                     });
                 }
                 if (record.project && !masterProjects.has(record.project)) {
