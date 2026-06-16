@@ -1102,7 +1102,10 @@
         let options_companyAccounts = [];
 
         let currentUser = null;
+        let currentSessionToken = null;
+        let currentUserId = null;
         let currentTodoScope = 'all';
+        let _sessionCheckInterval = null;
 
         // ==============================================
         // CONFIG (ฝังค่าตายตัว — เปิดเว็บ = เชื่อมต่อ API ทันที)
@@ -1316,9 +1319,16 @@
                 document.getElementById('main-loading-spinner').classList.remove('hidden');
                 
                 try {
-                    const response = await fetchWithTimeout(`${GAS_API_URL}?action=get_data&token=${encodeURIComponent(APP_CONFIG.apiToken)}`);
+                    // ต้องมี session token ก่อนถึงจะดึง data ได้
+                    if (!currentSessionToken) {
+                        showLoginScreen();
+                        return;
+                    }
+                    const response = await fetchWithTimeout(
+                        `${GAS_API_URL}?action=get_data&token=${encodeURIComponent(API_TOKEN)}&sessionToken=${encodeURIComponent(currentSessionToken)}&userId=${encodeURIComponent(currentUserId)}`
+                    );
                     const result = await response.json();
-                    
+
                     if (result.status === "success") {
                         systemUsers = result.users;
                         options_payees = result.payees;
@@ -1328,13 +1338,17 @@
                         options_companies = result.companies;
                         options_companyAccounts = result.companyAccounts;
                         records = result.requisitions;
-                        
+
                         showToast("เชื่อมต่อข้อมูล Google Sheets สำเร็จแล้ว!", "success");
+                    } else if (result.code === "SESSION_EXPIRED") {
+                        // session หมดอายุ
+                        handleSessionExpired();
+                        return;
                     } else {
                         throw new Error(result.message);
                     }
                 } catch (err) {
-                    showToast("ไม่สามารถเชื่อมต่อ Sheets API ได้สิทธิ์สลับไปใช้ Local Fallback: " + err.message, "error");
+                    showToast("ไม่สามารถเชื่อมต่อ Sheets API ได้: " + err.message, "error");
                     loadLocalStorageFallback();
                 } finally {
                     document.getElementById('main-loading-spinner').classList.add('hidden');
@@ -1346,17 +1360,61 @@
             }
 
             // ตรวจสอบเซสชันผู้ใช้งานเดิม
-            const savedSession = localStorage.getItem('current_logged_in_user');
-            if (savedSession) {
+            const savedSessionToken = localStorage.getItem('current_session_token');
+            const savedUserId = localStorage.getItem('current_user_id');
+            const savedUser = localStorage.getItem('current_logged_in_user');
+            const savedExpiresAt = parseInt(localStorage.getItem('session_expires_at') || '0', 10);
+
+            // ตรวจสอบว่า session ยังไม่หมดอายุ
+            if (savedSessionToken && savedUserId && savedUser && Date.now() / 1000 < savedExpiresAt) {
                 try {
-                    currentUser = JSON.parse(savedSession);
+                    currentSessionToken = savedSessionToken;
+                    currentUserId = savedUserId;
+                    currentUser = JSON.parse(savedUser);
+                    startSessionWatcher();
                     showAppScreen();
                 } catch (e) {
                     showLoginScreen();
                 }
             } else {
+                // session หมดอายุ → clear
+                if (savedSessionToken) clearLocalSession();
                 showLoginScreen();
             }
+        }
+
+        // Clear local session (logout cleanup)
+        function clearLocalSession() {
+            localStorage.removeItem('current_session_token');
+            localStorage.removeItem('current_user_id');
+            localStorage.removeItem('current_logged_in_user');
+            localStorage.removeItem('session_expires_at');
+            currentSessionToken = null;
+            currentUserId = null;
+            currentUser = null;
+            if (_sessionCheckInterval) {
+                clearInterval(_sessionCheckInterval);
+                _sessionCheckInterval = null;
+            }
+        }
+
+        // ตรวจสอบ session ทุก 5 นาที (auto-logout เมื่อหมดอายุ)
+        function startSessionWatcher() {
+            if (_sessionCheckInterval) clearInterval(_sessionCheckInterval);
+            _sessionCheckInterval = setInterval(() => {
+                const expiresAt = parseInt(localStorage.getItem('session_expires_at') || '0', 10);
+                if (Date.now() / 1000 >= expiresAt) {
+                    showToast('เซสชันหมดอายุ กรุณาเข้าสู่ระบบใหม่', 'warning');
+                    handleSessionExpired();
+                }
+            }, 5 * 60 * 1000); // 5 นาที
+        }
+
+        // จัดการเมื่อ session หมดอายุ
+        function handleSessionExpired() {
+            clearLocalSession();
+            showLoginScreen();
+            showToast('เซสชันหมดอายุ กรุณาเข้าสู่ระบบใหม่', 'warning');
         }
 
         // ทำการ Fallback ไปยังหน่วยความจำจำลองของเบราว์เซอร์
@@ -1443,12 +1501,33 @@
             try {
                 // import action ใช้ timeout ยาวกว่า (180s/chunk) เพราะต้องเขียน sheet จริง
                 const timeout = action === "import_records" ? 180000 : 15000;
+
+                // แนบ session token (ยกเว้น login/logout)
+                const payload = {
+                    action: action,
+                    data: data,
+                    id: data.id || data,
+                    token: API_TOKEN
+                };
+                if (action !== "login" && currentSessionToken) {
+                    payload.sessionToken = currentSessionToken;
+                    payload.userId = currentUserId;
+                }
+
                 const response = await fetchWithTimeout(GAS_API_URL, {
                     method: "POST",
                     headers: { "Content-Type": "text/plain" },
-                    body: JSON.stringify({ action: action, data: data, id: data.id || data, token: API_TOKEN })
+                    body: JSON.stringify(payload)
                 }, timeout);
-                return await response.json();
+
+                const result = await response.json();
+
+                // ถ้า session หมดอายุ → กลับไปหน้า login
+                if (result.code === "SESSION_EXPIRED") {
+                    handleSessionExpired();
+                }
+
+                return result;
             } catch (err) {
                 return { status: "error", message: "ล้มเหลวในการส่ง API: " + err.message };
             }
@@ -1925,29 +2004,143 @@
 
         function handleLoginSubmit(e) {
             e.preventDefault();
-            const usernameInput = document.getElementById('login-username').value.trim().toLowerCase();
+            const usernameInput = document.getElementById('login-username').value.trim();
             const passwordInput = document.getElementById('login-password').value;
             const errorAlert = document.getElementById('login-error-alert');
+            const errorMsg = document.getElementById('login-error-msg');
+            const submitBtn = e.target.querySelector('button[type="submit"]');
 
-            const user = systemUsers.find(u => u.username.toLowerCase() === usernameInput && u.password === passwordInput);
-            
-            if (user) {
-                currentUser = { name: user.name, role: user.role, email: user.email };
-                localStorage.setItem('current_logged_in_user', JSON.stringify(currentUser));
-                errorAlert.classList.add('hidden');
-                showToast(`เข้าสู่ระบบสำเร็จ ยินดีต้อนรับคุณ ${currentUser.name}`, 'success');
-                showAppScreen();
-            } else {
+            // กันก่อนเลย: ห้าม password ว่าง
+            if (!usernameInput) {
+                errorMsg.innerText = 'กรุณากรอกชื่อผู้ใช้งาน';
                 errorAlert.classList.remove('hidden');
-                showToast('เข้าสู่ระบบไม่สำเร็จ กรุณาตรวจสอบข้อมูลอีกครั้ง', 'error');
+                return;
             }
+            if (!passwordInput || passwordInput.length < 1) {
+                errorMsg.innerText = 'กรุณากรอกรหัสผ่าน';
+                errorAlert.classList.remove('hidden');
+                showToast('กรุณากรอกรหัสผ่าน', 'error');
+                return;
+            }
+
+            // ปิดปุ่ม + เปลี่ยนเป็น loading
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1.5"></i> กำลังตรวจสอบ...';
+
+            // เรียก backend login
+            attemptLogin(usernameInput, passwordInput)
+                .then(result => {
+                    if (result.status === 'success') {
+                        // เก็บ session
+                        currentSessionToken = result.sessionToken;
+                        currentUserId = result.userId;
+                        currentUser = { name: result.name, role: result.role, email: result.email };
+                        localStorage.setItem('current_session_token', result.sessionToken);
+                        localStorage.setItem('current_user_id', result.userId);
+                        localStorage.setItem('current_logged_in_user', JSON.stringify(currentUser));
+                        localStorage.setItem('session_expires_at', result.expiresAt);
+
+                        errorAlert.classList.add('hidden');
+                        showToast(`เข้าสู่ระบบสำเร็จ ยินดีต้อนรับคุณ ${currentUser.name}`, 'success');
+                        startSessionWatcher();
+                        showAppScreen();
+                    } else {
+                        errorMsg.innerText = result.message || 'ชื่อผู้ใช้งานหรือรหัสผ่านไม่ถูกต้อง';
+                        errorAlert.classList.remove('hidden');
+                        showToast(result.message || 'เข้าสู่ระบบไม่สำเร็จ', 'error');
+                    }
+                })
+                .catch(err => {
+                    // Fallback: ลอง local check (กรณี Sheets API ล่ม แต่ยังมี localStorage cache)
+                    if (GAS_API_URL) {
+                        // มี API แต่ fail → ไม่ให้ login
+                        errorMsg.innerText = 'ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์: ' + err.message;
+                        errorAlert.classList.remove('hidden');
+                        showToast('ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้', 'error');
+                    } else {
+                        // ไม่มี API → local mode (fallback)
+                        const user = systemUsers.find(u =>
+                            u.username.toLowerCase() === usernameInput.toLowerCase() &&
+                            u.password === passwordInput
+                        );
+                        if (user) {
+                            currentUser = { name: user.name, role: user.role, email: user.email };
+                            localStorage.setItem('current_logged_in_user', JSON.stringify(currentUser));
+                            errorAlert.classList.add('hidden');
+                            showToast('เข้าสู่ระบบ (Local Mode) สำเร็จ', 'success');
+                            showAppScreen();
+                        } else {
+                            errorMsg.innerText = 'ชื่อผู้ใช้งานหรือรหัสผ่านไม่ถูกต้อง';
+                            errorAlert.classList.remove('hidden');
+                            showToast('เข้าสู่ระบบไม่สำเร็จ', 'error');
+                        }
+                    }
+                })
+                .finally(() => {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = '<i class="fa-solid fa-right-to-bracket mr-1.5"></i> เข้าสู่ระบบอย่างปลอดภัย';
+                });
+        }
+
+        // เรียก backend login (POST)
+        async function attemptLogin(username, password) {
+            // ถ้าไม่มี API URL (Local Storage mode) → ตรวจ local + เตือน user
+            if (!GAS_API_URL) {
+                // local mode: ใช้ default users
+                const user = systemUsers.find(u =>
+                    u.username && u.username.toLowerCase() === username.toLowerCase() &&
+                    u.password === password
+                );
+                if (user) {
+                    return {
+                        status: 'success',
+                        sessionToken: 'local_' + Date.now(),
+                        userId: user.id,
+                        name: user.name,
+                        role: user.role,
+                        email: user.email || '',
+                        expiresAt: Math.floor(Date.now() / 1000) + 8 * 60 * 60,
+                        _isLocal: true
+                    };
+                }
+                return { status: 'error', message: 'ชื่อผู้ใช้งานหรือรหัสผ่านไม่ถูกต้อง' };
+            }
+
+            const response = await fetchWithTimeout(GAS_API_URL, {
+                method: "POST",
+                headers: { "Content-Type": "text/plain" },
+                body: JSON.stringify({
+                    action: "login",
+                    token: API_TOKEN,
+                    username: username,
+                    password: password
+                })
+            }, 15000);
+            return await response.json();
         }
 
         function handleLogout() {
-            showConfirmDialog("ยืนยันสิทธิ์", "คุณต้องการออกจากระบบการตั้งเบิกจ่ายเงินใช่หรือไม่?", () => {
-                localStorage.removeItem('current_logged_in_user');
-                currentUser = null;
+            showConfirmDialog("ยืนยันสิทธิ์", "คุณต้องการออกจากระบบการตั้งเบิกจ่ายเงินใช่หรือไม่?", async () => {
+                // แจ้ง backend ลบ session
+                if (currentSessionToken && GAS_API_URL) {
+                    try {
+                        await fetchWithTimeout(GAS_API_URL, {
+                            method: "POST",
+                            headers: { "Content-Type": "text/plain" },
+                            body: JSON.stringify({
+                                action: "logout",
+                                token: API_TOKEN,
+                                sessionToken: currentSessionToken,
+                                userId: currentUserId
+                            })
+                        }, 5000);
+                    } catch (e) {
+                        // ignore
+                    }
+                }
+                clearLocalSession();
                 showLoginScreen();
+                showToast('ออกจากระบบเรียบร้อย', 'info');
             });
         }
 
