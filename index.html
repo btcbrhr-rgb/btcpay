@@ -831,24 +831,41 @@
                     <div id="import-master-preview" class="grid grid-cols-2 md:grid-cols-4 gap-2 text-[11px]"></div>
                 </div>
 
-                <!-- Sample rows -->
+                <!-- Full preview table (scrollable) -->
                 <div>
-                    <p class="text-xs font-bold text-slate-700 mb-2"><i class="fa-solid fa-list-ul text-slate-500 mr-1"></i> ตัวอย่าง 5 แถวแรกที่จะนำเข้า</p>
-                    <div class="overflow-x-auto border rounded-lg">
+                    <div class="flex items-center justify-between mb-2">
+                        <p class="text-xs font-bold text-slate-700"><i class="fa-solid fa-list-ul text-slate-500 mr-1"></i> ตัวอย่างข้อมูลทั้งหมดที่จะนำเข้า (scroll เพื่อดูเพิ่ม)</p>
+                        <span id="import-row-counter" class="text-[10px] text-slate-500 font-mono"></span>
+                    </div>
+                    <div class="border rounded-lg overflow-auto max-h-[50vh]">
                         <table class="w-full text-[10px] text-left">
-                            <thead class="bg-slate-100 text-slate-600">
+                            <thead class="bg-slate-100 text-slate-600 sticky top-0 z-10 shadow-sm">
                                 <tr>
-                                    <th class="py-1.5 px-2 font-bold">#</th>
-                                    <th class="py-1.5 px-2 font-bold">เลขที่</th>
-                                    <th class="py-1.5 px-2 font-bold">วันที่</th>
+                                    <th class="py-1.5 px-2 font-bold w-10">#</th>
+                                    <th class="py-1.5 px-2 font-bold w-24">เลขที่</th>
+                                    <th class="py-1.5 px-2 font-bold w-20">วันที่</th>
+                                    <th class="py-1.5 px-2 font-bold w-20">ครบกำหนด</th>
                                     <th class="py-1.5 px-2 font-bold">ผู้รับ</th>
-                                    <th class="py-1.5 px-2 font-bold text-right">ยอด</th>
-                                    <th class="py-1.5 px-2 font-bold text-center">สถานะ</th>
+                                    <th class="py-1.5 px-2 font-bold">โครงการ</th>
+                                    <th class="py-1.5 px-2 font-bold text-right w-24">ยอด</th>
+                                    <th class="py-1.5 px-2 font-bold text-center w-20">สถานะ</th>
                                 </tr>
                             </thead>
                             <tbody id="import-sample-rows" class="divide-y divide-slate-100 bg-white"></tbody>
                         </table>
                     </div>
+                </div>
+
+                <!-- Progress bar (ซ่อนไว้ก่อน import) -->
+                <div id="import-progress-container" class="hidden bg-slate-50 border rounded-lg p-3 space-y-2">
+                    <div class="flex items-center justify-between">
+                        <p class="text-xs font-bold text-slate-700"><i class="fa-solid fa-spinner fa-spin text-cyan-500 mr-1"></i> กำลังนำเข้าข้อมูล...</p>
+                        <p class="text-xs font-mono text-slate-600" id="import-progress-text">0 / 0</p>
+                    </div>
+                    <div class="w-full bg-slate-200 rounded-full h-2 overflow-hidden">
+                        <div id="import-progress-bar" class="bg-gradient-to-r from-cyan-500 to-indigo-500 h-full rounded-full transition-all duration-300" style="width: 0%"></div>
+                    </div>
+                    <p class="text-[10px] text-slate-500" id="import-progress-detail">กำลังเตรียมข้อมูล...</p>
                 </div>
             </div>
 
@@ -1424,8 +1441,8 @@
             }
 
             try {
-                // import action ใช้ timeout ยาวกว่า (60s) เพราะ payload ใหญ่
-                const timeout = action === "import_records" ? 60000 : 15000;
+                // import action ใช้ timeout ยาวกว่า (180s/chunk) เพราะต้องเขียน sheet จริง
+                const timeout = action === "import_records" ? 180000 : 15000;
                 const response = await fetchWithTimeout(GAS_API_URL, {
                     method: "POST",
                     headers: { "Content-Type": "text/plain" },
@@ -1759,10 +1776,12 @@
                 masterDiv.appendChild(div);
             });
 
-            // Sample rows
+            // Sample rows (แสดงทั้งหมด — full table)
             const tbody = document.getElementById('import-sample-rows');
             tbody.innerHTML = '';
-            _importedRows.slice(0, 5).forEach((r, i) => {
+            // ใช้ DocumentFragment เพื่อ performance (DOM manipulation ครั้งเดียว)
+            const fragment = document.createDocumentFragment();
+            _importedRows.forEach((r, i) => {
                 const tr = document.createElement('tr');
                 tr.className = 'hover:bg-slate-50';
                 const statusBadge = r.status === 'Paid'
@@ -1770,14 +1789,20 @@
                     : '<span class="px-1.5 py-0.5 rounded-full bg-orange-100 text-orange-800 text-[9px] font-bold">รออนุมัติ</span>';
                 tr.innerHTML = `
                     <td class="py-1.5 px-2 text-slate-400">${i + 1}</td>
-                    <td class="py-1.5 px-2 font-mono font-bold">${r.docNo}</td>
-                    <td class="py-1.5 px-2">${r.recordDate || '-'}</td>
-                    <td class="py-1.5 px-2 truncate max-w-[200px]">${r.payeeName || '-'}</td>
-                    <td class="py-1.5 px-2 text-right font-bold">${r.totalAmount.toLocaleString('th-TH', {minimumFractionDigits: 2})}</td>
-                    <td class="py-1.5 px-2 text-center">${statusBadge}</td>
+                    <td class="py-1.5 px-2 font-mono font-bold whitespace-nowrap">${r.docNo}</td>
+                    <td class="py-1.5 px-2 whitespace-nowrap">${r.recordDate || '-'}</td>
+                    <td class="py-1.5 px-2 whitespace-nowrap">${r.dueDate || '-'}</td>
+                    <td class="py-1.5 px-2 truncate max-w-[250px]">${r.payeeName || '-'}</td>
+                    <td class="py-1.5 px-2 truncate max-w-[200px]">${r.project || '-'}</td>
+                    <td class="py-1.5 px-2 text-right font-bold whitespace-nowrap">${r.totalAmount.toLocaleString('th-TH', {minimumFractionDigits: 2})}</td>
+                    <td class="py-1.5 px-2 text-center whitespace-nowrap">${statusBadge}</td>
                 `;
-                tbody.appendChild(tr);
+                fragment.appendChild(tr);
             });
+            tbody.appendChild(fragment);
+
+            // อัปเดต row counter
+            document.getElementById('import-row-counter').innerText = `${_importedRows.length.toLocaleString()} แถว`;
 
             // เปลี่ยน step
             document.getElementById('import-step-upload').classList.add('hidden');
@@ -1792,11 +1817,27 @@
                 return;
             }
             const btn = document.getElementById('import-confirm-btn');
+            const backBtn = document.getElementById('import-back-btn');
+            const progressContainer = document.getElementById('import-progress-container');
+            const progressBar = document.getElementById('import-progress-bar');
+            const progressText = document.getElementById('import-progress-text');
+            const progressDetail = document.getElementById('import-progress-detail');
+
+            // Disable ปุ่ม และเปิด progress bar
             btn.disabled = true;
+            backBtn.disabled = true;
             btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i> กำลังนำเข้า...';
+            progressContainer.classList.remove('hidden');
+
+            const CHUNK_SIZE = 100; // ส่งทีละ 100 แถว
+            const totalRows = _importedRows.length;
+            let importedCount = 0;
+            let updatedCount = 0;
+            let masterStats = null;
 
             try {
-                // เพิ่ม project_code ให้ project (ถ้าไม่มี)
+                // Phase 1: สร้าง master data ก่อน (ครั้งเดียว)
+                progressDetail.innerText = 'กำลังเตรียมข้อมูลหลัก...';
                 _importedMasterData.projects = _importedMasterData.projects.map((p, i) => ({
                     project_code: 'P-' + String(i + 1).padStart(3, '0'),
                     project_name: p.project_name
@@ -1818,23 +1859,67 @@
                     status: 'Active'
                 }));
 
-                const result = await apiPostRequest("import_records", {
-                    records: _importedRows,
-                    masterData: _importedMasterData
-                });
+                // Phase 2: ส่ง records ทีละ chunk
+                const totalChunks = Math.ceil(totalRows / CHUNK_SIZE);
+                for (let chunkIdx = 0; chunkIdx < totalChunks; chunkIdx++) {
+                    const start = chunkIdx * CHUNK_SIZE;
+                    const end = Math.min(start + CHUNK_SIZE, totalRows);
+                    const chunk = _importedRows.slice(start, end);
 
-                if (result.status === "success") {
-                    showToast(result.message, "success");
+                    progressDetail.innerText = `กำลังนำเข้าแถวที่ ${start + 1} - ${end} (ชุดที่ ${chunkIdx + 1}/${totalChunks})`;
+
+                    const isFirstChunk = chunkIdx === 0;
+                    const result = await apiPostRequest("import_records", {
+                        records: chunk,
+                        masterData: isFirstChunk ? _importedMasterData : null,  // ส่ง master data แค่ครั้งแรก
+                        isFirstBatch: isFirstChunk
+                    });
+
+                    if (result.status !== "success") {
+                        throw new Error(result.message);
+                    }
+
+                    // เก็บสถิติ
+                    importedCount += result.imported || 0;
+                    updatedCount += result.updated || 0;
+                    if (isFirstChunk && result.masterStats) {
+                        masterStats = result.masterStats;
+                    }
+
+                    // อัปเดต progress bar
+                    const processed = end;
+                    const percent = (processed / totalRows) * 100;
+                    progressBar.style.width = percent + '%';
+                    progressText.innerText = `${processed.toLocaleString()} / ${totalRows.toLocaleString()} (${percent.toFixed(1)}%)`;
+                }
+
+                progressDetail.innerHTML = '<i class="fa-solid fa-check text-emerald-500"></i> นำเข้าเสร็จเรียบร้อย!';
+                progressBar.style.width = '100%';
+
+                const totalNewMaster = masterStats ? (
+                    masterStats.payees.added + masterStats.projects.added +
+                    masterStats.companies.added + masterStats.expenseTypes.added +
+                    masterStats.paymentMethods.added
+                ) : 0;
+
+                const summaryMsg =
+                    `นำเข้าสำเร็จ! เอกสาร: ใหม่ ${importedCount.toLocaleString()} / อัปเดต ${updatedCount.toLocaleString()}` +
+                    (totalNewMaster > 0 ? ` | Master data: +${totalNewMaster.toLocaleString()}` : '');
+
+                showToast(summaryMsg, "success");
+
+                // ปิด modal และ refresh
+                setTimeout(async () => {
                     closeImportModal();
                     await refreshDataInPlace();
-                } else {
-                    showToast("นำเข้าล้มเหลว: " + result.message, "error");
-                }
+                }, 1500);
+
             } catch (err) {
-                showToast("เกิดข้อผิดพลาด: " + err.message, "error");
-            } finally {
+                progressDetail.innerHTML = `<i class="fa-solid fa-circle-exclamation text-rose-500"></i> นำเข้าล้มเหลว: ${err.message}`;
+                showToast("นำเข้าล้มเหลว: " + err.message, "error");
                 btn.disabled = false;
-                btn.innerHTML = '<i class="fa-solid fa-file-import mr-1"></i> ยืนยันนำเข้า';
+                backBtn.disabled = false;
+                btn.innerHTML = '<i class="fa-solid fa-rotate-right mr-1"></i> ลองใหม่';
             }
         }
 
