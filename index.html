@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ระบบบันทึกใบตั้งเบิก อนุมัติ และบันทึกการจ่ายเงิน (เชื่อม Google Sheets)</title>
+    <title>ระบบบันทึกใบตั้งเบิก อนุมัติ และจ่ายเงิน - บริษัท บุรีรัมย์ธงชัยก่อสร้าง จำกัด</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome Icons -->
@@ -82,11 +82,11 @@
     <div id="login-screen" class="min-h-screen flex flex-col justify-center items-center bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 p-4 transition-all duration-300">
         <div class="w-full max-w-md bg-slate-900/80 backdrop-blur-md rounded-2xl border border-slate-800 p-8 shadow-2xl space-y-6">
             <div class="text-center space-y-2">
-                <div class="inline-flex bg-indigo-600/10 border border-indigo-500/20 p-4 rounded-2xl text-indigo-400 mb-2">
-                    <i class="fa-solid fa-file-invoice-dollar text-3xl"></i>
+                <div class="inline-flex bg-white p-3 rounded-2xl mb-2 shadow-inner w-32 h-32 items-center justify-center overflow-hidden">
+                    <img src="https://img2.pic.in.th/pic/Screenshot-2025-03-03-132721e6cc77cbcea28f01.png" alt="BRTC Logo" class="max-w-full max-h-full object-contain" onerror="this.onerror=null; this.src='https://placehold.co/120x120/4f46e5/ffffff?text=BRTC';">
                 </div>
                 <h2 class="text-xl font-bold text-white tracking-tight">ระบบตั้งเบิก & จ่ายเงินองค์กร</h2>
-                <p class="text-xs text-slate-400">บูรพา โฮลดิ้งส์ จำกัด (BTC)</p>
+                <p class="text-xs text-slate-400">บริษัท บุรีรัมย์ธงชัยก่อสร้าง จำกัด (BRTC)</p>
             </div>
 
             <!-- LOGIN ERROR ALERT -->
@@ -133,12 +133,12 @@
         <aside id="sidebar" class="fixed inset-y-0 left-0 bg-slate-950 text-slate-200 w-64 flex flex-col justify-between transform -translate-x-full md:translate-x-0 transition-transform duration-300 z-50 shadow-2xl border-r border-slate-900">
             <div class="p-6">
                 <div class="flex items-center gap-3 border-b border-slate-800 pb-5">
-                    <div class="bg-indigo-600 p-2.5 rounded-xl shadow-lg flex items-center justify-center">
-                        <i class="fa-solid fa-file-invoice-dollar text-lg text-white"></i>
+                    <div class="bg-white p-1 rounded-lg shadow-lg flex items-center justify-center w-12 h-12 shrink-0 overflow-hidden">
+                        <img src="https://img2.pic.in.th/pic/Screenshot-2025-03-03-132721e6cc77cbcea28f01.png" alt="BRTC Logo" class="max-w-full max-h-full object-contain" onerror="this.onerror=null; this.src='https://placehold.co/40x40/4f46e5/ffffff?text=BRTC';">
                     </div>
                     <div>
-                        <h1 class="text-sm font-bold tracking-tight text-white leading-tight">ระบบตั้งเบิก & จ่ายเงิน</h1>
-                        <p class="text-[10px] text-slate-400 font-medium" id="db-mode-badge">โหมดใช้งาน: Local Storage</p>
+                        <h1 class="text-xs font-bold tracking-tight text-white leading-tight">บุรีรัมย์ธงชัยก่อสร้าง</h1>
+                        <p class="text-[9px] text-slate-400 font-medium" id="db-mode-badge">โหมดใช้งาน: Local Storage</p>
                     </div>
                 </div>
 
@@ -166,7 +166,7 @@
                 </nav>
             </div>
 
-            <!-- SETTINGS & PROFILE (เข้าถึงได้เฉพาะสิทธิ์เจ้าหน้าที่การเงินเท่านั้น) -->
+            <!-- SETTINGS & PROFILE -->
             <div class="p-4 border-t border-slate-900 bg-slate-950">
                 <button id="sidebar-config-btn" onclick="openConfigModal()" class="hidden w-full mb-3 bg-slate-900 hover:bg-slate-850 text-slate-300 border border-slate-800 text-[10px] py-2 rounded-lg flex items-center justify-center gap-1.5 transition-all">
                     <i class="fa-solid fa-cloud-arrow-up text-indigo-400"></i> ตั้งค่าระบบ Google Sheets
@@ -198,7 +198,7 @@
                     <button onclick="toggleSidebar()" class="p-2 hover:bg-slate-900 text-slate-200 rounded-lg">
                         <i class="fa-solid fa-bars text-lg"></i>
                     </button>
-                    <span class="text-xs font-bold">ระบบตั้งเบิก & จ่ายเงิน</span>
+                    <span class="text-xs font-bold">บุรีรัมย์ธงชัยก่อสร้าง</span>
                 </div>
                 <div class="bg-indigo-600 px-2 py-1 rounded text-[10px] font-bold" id="mobile-role-indicator">--</div>
             </header>
@@ -226,7 +226,7 @@
                 <!-- SECURITY STATUS BANNER -->
                 <div id="permission-banner" class="mb-6 p-4 rounded-xl border flex items-center justify-between gap-4 transition-all duration-300"></div>
 
-                <!-- LOADING SPINNER (แสดงระหว่างรอฐานข้อมูลออนไลน์) -->
+                <!-- LOADING SPINNER -->
                 <div id="main-loading-spinner" class="hidden flex-col justify-center items-center py-20 space-y-4">
                     <svg class="animate-spin h-10 w-10 text-indigo-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -302,7 +302,7 @@
 
                     <!-- To-Do & Chart -->
                     <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
-                        <!-- To-Do List ค้างชำระ -->
+                        <!-- To-Do List -->
                         <div class="xl:col-span-2 bg-white rounded-2xl border border-slate-200 shadow-sm p-6 flex flex-col justify-between">
                             <div>
                                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-5 pb-4 border-b border-slate-100">
@@ -499,7 +499,7 @@
                             </div>
                         </div>
 
-                        <!-- Remarks and Attachment -->
+                        <!-- Remarks and Attachments -->
                         <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
                             <div class="bg-slate-50 border-b border-slate-100 px-6 py-4 flex items-center gap-2">
                                 <i class="fa-regular fa-comment-dots text-indigo-600"></i>
@@ -919,11 +919,27 @@
         function loadLocalStorageFallback() {
             systemUsers = JSON.parse(localStorage.getItem('system_users')) || [...defaultUsers];
             options_payees = JSON.parse(localStorage.getItem('options_payees')) || [];
-            options_paymentTypes = JSON.parse(localStorage.getItem('options_payment_types')) || [];
-            options_projects = JSON.parse(localStorage.getItem('options_projects')) || [];
-            options_expenseTypes = JSON.parse(localStorage.getItem('options_expense_types')) || [];
-            options_companies = JSON.parse(localStorage.getItem('options_companies')) || [];
-            options_companyAccounts = JSON.parse(localStorage.getItem('options_company_accounts')) || [];
+            options_paymentTypes = JSON.parse(localStorage.getItem('options_payment_types')) || [
+                { payment_type: "โอนเงินผ่านธนาคาร", status: "Active" },
+                { payment_type: "เช็คธนาคาร", status: "Active" },
+                { payment_type: "เงินสด", status: "Active" }
+            ];
+            options_projects = JSON.parse(localStorage.getItem('options_projects')) || [
+                { project_code: "P-001", project_name: "งานก่อสร้างอาคารสำนักงานใหญ่" }
+            ];
+            options_expenseTypes = JSON.parse(localStorage.getItem('options_expense_types')) || [
+                { expense_type: "ค่าวัสดุก่อสร้าง" },
+                { expense_type: "ค่าแรงผู้รับเหมา" },
+                { expense_type: "ค่าขนส่ง" },
+                { expense_type: "ค่าใช้จ่ายสำนักงาน" }
+            ];
+            // เพิ่มบริษัทบุรีรัมย์ธงชัยก่อสร้างเป็นบริษัทแรกในระบบเริ่มต้น
+            options_companies = JSON.parse(localStorage.getItem('options_companies')) || [
+                { company_id: "BRTC", company_name: "บริษัท บุรีรัมย์ธงชัยก่อสร้าง จำกัด" }
+            ];
+            options_companyAccounts = JSON.parse(localStorage.getItem('options_company_accounts')) || [
+                { account_id: "ACC-01", bank_name: "ธนาคารกสิกรไทย", account_no: "123-4-56789-0" }
+            ];
             records = JSON.parse(localStorage.getItem('upgraded_financial_records_v1')) || [];
         }
 
@@ -1700,7 +1716,7 @@
             const viewTitle = document.getElementById('view-title');
             const viewDesc = document.getElementById('view-description');
 
-            // --- เริ่มโค้ดทำไฮไลต์เมนูอย่างมีมิติ (Active Menu Highlighting) ---
+            // --- เริ่มโค้ดทำไฮไลต์เมนูอย่างมีมิติ ---
             const menuButtons = {
                 'dashboard': 'tab-dashboard-btn',
                 'req': 'tab-req-btn',
@@ -1875,7 +1891,7 @@
             for (let i = 1; i <= 10; i++) {
                 if (r[`desc${i}`] || r[`amount${i}`]) {
                     itemsHTML += `
-                        <tr class="border-b text-[11px]">
+                        <tr class="border-b text-[11px] border-black">
                             <td class="py-1.5 text-center border-r border-black font-bold">${validIndex++}</td>
                             <td class="py-1.5 px-2 border-r border-black">${r[`desc${i}`] || '-'}</td>
                             <td class="py-1.5 px-2 text-right font-semibold">${parseFloat(r[`amount${i}`] || 0).toLocaleString('th-TH', {minimumFractionDigits: 2})}</td>
@@ -1886,15 +1902,25 @@
 
             printContainer.innerHTML = `
                 <div class="border border-black p-6 bg-white text-black" style="font-family: 'Sarabun', sans-serif;">
-                    <div class="flex justify-between items-start mb-4">
-                        <div>
-                            <h1 class="text-lg font-bold tracking-tight">ใบสำคัญตั้งเบิกเงิน</h1>
-                            <p class="text-[10px] text-gray-600">REQUISITION VOUCHER</p>
-                            <p class="text-xs font-semibold mt-2">บริษัทผู้ตั้งเบิก: <span class="font-normal underline">${r.company}</span></p>
-                            <p class="text-xs font-semibold">ชื่อโครงการ: <span class="font-normal underline">${r.project || '-'}</span></p>
+                    
+                    <!-- Header Letterhead (บริษัท บุรีรัมย์ธงชัยก่อสร้าง จำกัด) -->
+                    <div class="flex items-center justify-between border-b-2 border-black pb-4 mb-4 gap-4">
+                        <div class="flex items-center gap-4">
+                            <div class="w-16 h-16 shrink-0 overflow-hidden flex items-center justify-center border border-gray-300 p-1 rounded">
+                                <img src="https://img2.pic.in.th/pic/Screenshot-2025-03-03-132721e6cc77cbcea28f01.png" alt="BRTC Logo" class="max-w-full max-h-full object-contain" onerror="this.onerror=null; this.src='https://placehold.co/80x80/000000/ffffff?text=BRTC';">
+                            </div>
+                            <div class="text-left leading-tight">
+                                <h2 class="text-sm font-bold">บริษัท บุรีรัมย์ธงชัยก่อสร้าง จำกัด</h2>
+                                <h3 class="text-[10px] font-bold text-gray-700">BURIRAM THONGCHAI CONSTRUCTION CO., LTD.</h3>
+                                <p class="text-[9px] text-gray-600 mt-1">ที่อยู่: 31/2 ถนนอินจันทร์ณรงค์ ต.ในเมือง อ.เมือง จ.บุรีรัมย์ 31000</p>
+                                <p class="text-[9px] text-gray-600">เลขประจำตัวผู้เสียภาษี: 0315559001144 | โทร: 044-611134, 611835</p>
+                                <p class="text-[9px] text-gray-600">E-mail: brtc2024@gmail.com</p>
+                            </div>
                         </div>
-                        <div class="text-right text-xs">
-                            <div class="border border-black p-2 rounded bg-gray-50 text-left">
+                        <div class="text-right shrink-0">
+                            <h1 class="text-lg font-black tracking-tight text-slate-900 leading-none">ใบสำคัญตั้งเบิกเงิน</h1>
+                            <p class="text-[9px] text-gray-600 font-bold tracking-wider mt-1">REQUISITION VOUCHER</p>
+                            <div class="border border-black p-1.5 rounded mt-2 text-left text-[9px] font-medium bg-gray-50 min-w-[150px]">
                                 <p><b>เลขที่เอกสาร:</b> ${r.docNo}</p>
                                 <p><b>อ้างอิง (Ref):</b> ${r.refDocNo || '-'}</p>
                                 <p><b>วันที่ลงข้อมูล:</b> ${formatDateThai(r.recordDate)}</p>
@@ -1903,14 +1929,16 @@
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-2 gap-3 mb-4 text-xs border-t border-b border-black py-2.5">
+                    <div class="grid grid-cols-2 gap-3 mb-4 text-xs border-b border-black pb-2.5">
                         <div>
-                            <p><b>ผู้ขอตั้งเบิก:</b> ${r.recorder}</p>
-                            <p><b>ร้านค้า / ผู้รับเงิน (Payee):</b> ${r.payeeName}</p>
+                            <p><b>บริษัทผู้ตั้งเบิก:</b> <span class="underline">${r.company}</span></p>
+                            <p class="mt-1"><b>ชื่อโครงการ:</b> <span class="underline">${r.project || '-'}</span></p>
+                            <p class="mt-1"><b>ผู้ขอตั้งเบิก:</b> ${r.recorder}</p>
                         </div>
                         <div>
-                            <p><b>รูปแบบชำระเงิน:</b> ${r.paymentMethod}</p>
-                            <p><b>ธนาคาร & บัญชีรับโอน:</b> ${r.bankAccount} (เลขที่: ${r.accNo})</p>
+                            <p><b>ร้านค้า / ผู้รับเงิน (Payee):</b> ${r.payeeName}</p>
+                            <p class="mt-1"><b>รูปแบบชำระเงิน:</b> ${r.paymentMethod}</p>
+                            <p class="mt-1"><b>ธนาคาร & บัญชีรับโอน:</b> ${r.bankAccount} (เลขที่: ${r.accNo})</p>
                         </div>
                     </div>
 
@@ -1947,7 +1975,7 @@
                         <b>หมายเหตุใบสำคัญ:</b> <span class="italic text-slate-600">${r.remarks || '-'}</span>
                     </div>
 
-                    <div class="border-t-2 border-dashed border-gray-400 my-4 pt-4"></div>
+                    <div class="border-t border-dashed border-gray-400 my-4 pt-4"></div>
 
                     <h2 class="text-xs font-bold tracking-tight text-emerald-800 mb-2">ส่วนยืนยันผลธุรกรรมทำจ่ายจริง (สำหรับฝ่ายบัญชีและการเงิน)</h2>
                     <div class="grid grid-cols-3 gap-4 border border-black p-3 rounded text-[10px] bg-slate-50 mb-6 leading-relaxed">
@@ -2155,6 +2183,41 @@
             const date = new Date(dateString);
             if (isNaN(date.getTime())) return dateString;
             return date.toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric' });
+        }
+
+        // ==============================================
+        // TOAST NOTIFICATIONS
+        // ==============================================
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toast-container');
+            if (!container) return;
+
+            const toast = document.createElement('div');
+            let bgClass = "bg-slate-900";
+            let icon = '<i class="fa-solid fa-info text-blue-400"></i>';
+
+            if (type === 'success') {
+                bgClass = "bg-emerald-900";
+                icon = '<i class="fa-solid fa-circle-check text-emerald-400"></i>';
+            } else if (type === 'error') {
+                bgClass = "bg-rose-950";
+                icon = '<i class="fa-solid fa-circle-exclamation text-rose-400"></i>';
+            } else if (type === 'warning') {
+                bgClass = "bg-amber-950";
+                icon = '<i class="fa-solid fa-triangle-exclamation text-amber-400"></i>';
+            }
+
+            toast.className = `${bgClass} text-white px-4 py-3 rounded-xl border border-white/10 shadow-2xl flex items-center gap-3 text-xs animate-slide-in min-w-[250px]`;
+            toast.innerHTML = `
+                <div class="shrink-0 text-base">${icon}</div>
+                <div class="flex-grow font-semibold">${message}</div>
+            `;
+
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-2', 'transition-all', 'duration-300');
+                setTimeout(() => { toast.remove(); }, 300);
+            }, 4000);
         }
     </script>
 </body>
