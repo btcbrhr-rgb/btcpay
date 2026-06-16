@@ -160,6 +160,9 @@
                     <button id="tab-list-btn" onclick="switchTab('list')" class="w-full text-left flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-900 hover:text-white text-xs font-medium transition-all">
                         <i class="fa-solid fa-table-list text-sm w-5 text-center"></i> ฐานข้อมูล & ประวัติ
                     </button>
+                    <button id="tab-import-btn" onclick="openImportModal()" class="w-full text-left flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-900 hover:text-white text-xs font-medium transition-all">
+                        <i class="fa-solid fa-file-import text-sm w-5 text-center"></i> นำเข้าข้อมูล (Import)
+                    </button>
                     <button id="tab-users-btn" onclick="switchTab('users')" class="w-full text-left flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-900 hover:text-white text-xs font-medium transition-all">
                         <i class="fa-solid fa-users-gear text-sm w-5 text-center"></i> จัดการผู้ใช้
                     </button>
@@ -762,6 +765,107 @@
 
     <!-- CONFIGURATION GOOGLE SHEETS API MODAL (ลบออกแล้ว — API URL ฝังใน APP_CONFIG โดยตรง) -->
 
+    <!-- IMPORT DATA MODAL -->
+    <div id="import-modal" class="hidden fixed inset-0 z-50 bg-slate-950/60 flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-xl w-full max-w-3xl max-h-[90vh] overflow-hidden flex flex-col">
+            <div class="bg-slate-950 text-white px-6 py-4 flex justify-between items-center">
+                <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-file-import text-cyan-400 text-lg"></i>
+                    <h3 class="font-bold text-base sm:text-lg">นำเข้าข้อมูลจาก CSV (Import)</h3>
+                </div>
+                <button onclick="closeImportModal()" class="text-slate-400 hover:text-white text-xl"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <!-- Step 1: Upload -->
+            <div id="import-step-upload" class="p-6 space-y-4">
+                <div class="bg-cyan-50 border border-cyan-200 rounded-lg p-3 text-[11px] text-cyan-900">
+                    <p class="font-bold mb-1"><i class="fa-solid fa-circle-info mr-1"></i> ใช้สำหรับ</p>
+                    <ul class="list-disc list-inside space-y-0.5 leading-relaxed">
+                        <li><b>Setup ครั้งแรก</b> — นำเข้าข้อมูลเก่าเข้าระบบ</li>
+                        <li><b>Restore backup</b> — กู้คืนข้อมูลจากไฟล์สำรอง</li>
+                    </ul>
+                    <p class="mt-1.5 leading-relaxed">ระบบจะ <b>สร้างข้อมูลหลัก (Master Data) ให้อัตโนมัติ</b> เช่น ผู้รับเงิน, โครงการ, บริษัท ที่อ้างถึงในไฟล์</p>
+                </div>
+
+                <div id="csv-dropzone" class="border-2 border-dashed border-slate-300 rounded-xl p-8 text-center cursor-pointer hover:border-cyan-400 hover:bg-cyan-50/30 transition-all bg-slate-50">
+                    <i class="fa-solid fa-file-csv text-5xl text-slate-400 mb-3"></i>
+                    <p class="text-sm font-bold text-slate-700">คลิก หรือลากไฟล์ CSV มาวางที่นี่</p>
+                    <p class="text-[11px] text-slate-400 mt-1.5">รองรับไฟล์นามสกุล .csv (UTF-8)</p>
+                    <input type="file" id="csv-file-input" accept=".csv" class="hidden">
+                </div>
+
+                <div class="flex items-center gap-2 text-[11px] text-slate-500">
+                    <i class="fa-solid fa-lightbulb text-amber-500"></i>
+                    <span>หัวตาราง CSV ต้องมีคอลัมน์: เลขที่เอกสาร, ชื่อผู้รับเงิน, บริษัท, โครงการ, ฯลฯ</span>
+                </div>
+            </div>
+
+            <!-- Step 2: Preview -->
+            <div id="import-step-preview" class="hidden p-6 overflow-y-auto flex-1 space-y-4">
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    <div class="bg-indigo-50 border border-indigo-100 rounded-lg p-3 text-center">
+                        <p class="text-[10px] uppercase font-bold text-indigo-500 tracking-wider">ทั้งหมด</p>
+                        <p id="import-stat-total" class="text-2xl font-black text-indigo-900">0</p>
+                        <p class="text-[10px] text-indigo-700">แถว</p>
+                    </div>
+                    <div class="bg-emerald-50 border border-emerald-100 rounded-lg p-3 text-center">
+                        <p class="text-[10px] uppercase font-bold text-emerald-500 tracking-wider">พร้อมนำเข้า</p>
+                        <p id="import-stat-valid" class="text-2xl font-black text-emerald-900">0</p>
+                        <p class="text-[10px] text-emerald-700">แถว</p>
+                    </div>
+                    <div class="bg-rose-50 border border-rose-100 rounded-lg p-3 text-center">
+                        <p class="text-[10px] uppercase font-bold text-rose-500 tracking-wider">ข้าม</p>
+                        <p id="import-stat-skip" class="text-2xl font-black text-rose-900">0</p>
+                        <p class="text-[10px] text-rose-700">แถว</p>
+                    </div>
+                    <div class="bg-amber-50 border border-amber-100 rounded-lg p-3 text-center">
+                        <p class="text-[10px] uppercase font-bold text-amber-500 tracking-wider">สร้างใหม่</p>
+                        <p id="import-stat-new" class="text-2xl font-black text-amber-900">0</p>
+                        <p class="text-[10px] text-amber-700">master data</p>
+                    </div>
+                </div>
+
+                <!-- Master data ที่จะสร้าง -->
+                <div class="bg-slate-50 border rounded-lg p-3">
+                    <p class="text-xs font-bold text-slate-700 mb-2"><i class="fa-solid fa-magic-wand-sparkles text-cyan-500 mr-1"></i> ข้อมูลหลักที่จะถูกสร้างอัตโนมัติ (Master Data)</p>
+                    <div id="import-master-preview" class="grid grid-cols-2 md:grid-cols-4 gap-2 text-[11px]"></div>
+                </div>
+
+                <!-- Sample rows -->
+                <div>
+                    <p class="text-xs font-bold text-slate-700 mb-2"><i class="fa-solid fa-list-ul text-slate-500 mr-1"></i> ตัวอย่าง 5 แถวแรกที่จะนำเข้า</p>
+                    <div class="overflow-x-auto border rounded-lg">
+                        <table class="w-full text-[10px] text-left">
+                            <thead class="bg-slate-100 text-slate-600">
+                                <tr>
+                                    <th class="py-1.5 px-2 font-bold">#</th>
+                                    <th class="py-1.5 px-2 font-bold">เลขที่</th>
+                                    <th class="py-1.5 px-2 font-bold">วันที่</th>
+                                    <th class="py-1.5 px-2 font-bold">ผู้รับ</th>
+                                    <th class="py-1.5 px-2 font-bold text-right">ยอด</th>
+                                    <th class="py-1.5 px-2 font-bold text-center">สถานะ</th>
+                                </tr>
+                            </thead>
+                            <tbody id="import-sample-rows" class="divide-y divide-slate-100 bg-white"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-slate-100 px-6 py-4 border-t border-slate-200 flex justify-between items-center gap-2">
+                <button id="import-back-btn" onclick="resetImportModal()" class="hidden text-xs font-semibold text-slate-600 hover:text-slate-800">
+                    <i class="fa-solid fa-arrow-left mr-1"></i> เลือกไฟล์ใหม่
+                </button>
+                <div class="flex gap-2 ml-auto">
+                    <button onclick="closeImportModal()" class="bg-slate-200 hover:bg-slate-300 text-slate-800 text-xs font-semibold px-4 py-2 rounded-lg">ยกเลิก</button>
+                    <button id="import-confirm-btn" onclick="confirmImport()" class="hidden bg-cyan-600 hover:bg-cyan-700 text-white text-xs font-semibold px-4 py-2 rounded-lg">
+                        <i class="fa-solid fa-file-import mr-1"></i> ยืนยันนำเข้า
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- DETAIL MODAL & MANAGER ACTION FORM -->
     <div id="detail-modal" class="hidden fixed inset-0 z-50 bg-slate-900/50 flex items-center justify-center p-4 backdrop-blur-sm">
         <div class="bg-white rounded-2xl border border-slate-200 shadow-xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
@@ -865,6 +969,112 @@
             });
         }
 
+        // ==============================================
+        // CSV PARSER (รองรับ quote, comma ในชื่อ, BOM, แปลง พ.ศ.)
+        // ==============================================
+        function parseCSV(text) {
+            // ตัด BOM ถ้ามี
+            if (text.charCodeAt(0) === 0xFEFF) text = text.substring(1);
+
+            const rows = [];
+            let cur = [];
+            let field = '';
+            let inQuotes = false;
+
+            for (let i = 0; i < text.length; i++) {
+                const ch = text[i];
+                const next = text[i + 1];
+
+                if (inQuotes) {
+                    if (ch === '"' && next === '"') {
+                        field += '"'; i++;
+                    } else if (ch === '"') {
+                        inQuotes = false;
+                    } else {
+                        field += ch;
+                    }
+                } else {
+                    if (ch === '"') {
+                        inQuotes = true;
+                    } else if (ch === ',') {
+                        cur.push(field);
+                        field = '';
+                    } else if (ch === '\n' || ch === '\r') {
+                        if (field !== '' || cur.length > 0) {
+                            cur.push(field);
+                            rows.push(cur);
+                            cur = [];
+                            field = '';
+                        }
+                        if (ch === '\r' && next === '\n') i++;
+                    } else {
+                        field += ch;
+                    }
+                }
+            }
+            if (field !== '' || cur.length > 0) {
+                cur.push(field);
+                rows.push(cur);
+            }
+            return rows;
+        }
+
+        // แปลงวันที่ไทย DD/MM/YYYY(พ.ศ.) → ISO YYYY-MM-DD
+        function parseThaiDate(str) {
+            if (!str) return "";
+            str = str.trim();
+            if (!str || str === '-') return "";
+
+            // รูปแบบ "6/1/2568" หรือ "06/01/2568"
+            const m = str.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+            if (m) {
+                const day = m[1].padStart(2, '0');
+                const month = m[2].padStart(2, '0');
+                let year = parseInt(m[3], 10);
+                // ถ้า > 2500 = พ.ศ. → ลบ 543
+                if (year > 2500) year -= 543;
+                return `${year}-${month}-${day}`;
+            }
+            // ลอง ISO format YYYY-MM-DD ตรงๆ
+            if (/^\d{4}-\d{2}-\d{2}$/.test(str)) return str;
+            return str; // ส่งคืนค่าเดิมถ้าแปลงไม่ได้
+        }
+
+        // แปลง string ตัวเลขแบบไทย "30,800.000" → 30800
+        function parseThaiNumber(str) {
+            if (!str) return 0;
+            str = String(str).replace(/,/g, '').trim();
+            if (!str || str === '-') return 0;
+            const n = parseFloat(str);
+            return isNaN(n) ? 0 : n;
+        }
+
+        // ดึงชื่อธนาคาร + เลขบัญชี + สาขา จาก string "กรุงเทพ  เลขที่บัญชี : xxx  สาขา : xxx"
+        function parseBankInfo(str) {
+            if (!str) return { bankName: '', accNo: '' };
+            str = String(str).trim();
+            // ดึงเลขที่บัญชี
+            const accMatch = str.match(/เลขที่บัญชี\s*:?\s*([\d\-]+)/);
+            const accNo = accMatch ? accMatch[1] : '';
+            // ชื่อธนาคาร = คำแรก (ก่อน space แรก)
+            const bankName = str.split(/\s{2,}|\s+/)[0] || '';
+            return { bankName, accNo };
+        }
+
+        // ดึงชื่อผู้รับ (ตัดรหัส 102-01-001 นำหน้า)
+        function parsePayeeName(str) {
+            if (!str) return '';
+            str = String(str).trim();
+            // ลบ pattern "xxx-yy-zzz " นำหน้า
+            return str.replace(/^\d+-\d+-\d+\s*/, '').trim();
+        }
+
+        // ดึงชื่อ recorder (เอาคนแรก ก่อน "/")
+        function parseRecorder(str) {
+            if (!str) return '';
+            return String(str).split('/')[0].trim();
+        }
+
         let records = [];
         let systemUsers = [];
         let options_payees = [];
@@ -904,6 +1114,9 @@
 
             // Initialize file uploaders (drag-drop + click)
             initAllFileUploaders();
+
+            // Initialize CSV import uploader
+            initImportUploader();
 
             // อ่านค่าจาก API หลังบ้านหรือจำลอง Local Storage
             loadSystemData();
@@ -1211,11 +1424,13 @@
             }
 
             try {
+                // import action ใช้ timeout ยาวกว่า (60s) เพราะ payload ใหญ่
+                const timeout = action === "import_records" ? 60000 : 15000;
                 const response = await fetchWithTimeout(GAS_API_URL, {
                     method: "POST",
                     headers: { "Content-Type": "text/plain" },
                     body: JSON.stringify({ action: action, data: data, id: data.id || data, token: API_TOKEN })
-                });
+                }, timeout);
                 return await response.json();
             } catch (err) {
                 return { status: "error", message: "ล้มเหลวในการส่ง API: " + err.message };
@@ -1276,11 +1491,351 @@
         function showAppScreen() {
             document.getElementById('login-screen').classList.add('hidden');
             document.getElementById('app-screen').classList.remove('hidden');
-            
+
             updateDateOnHeader();
             generateAutoDocNo();
             updateUserInterface();
             switchTab('dashboard');
+        }
+
+        // ==============================================
+        // IMPORT MODAL
+        // ==============================================
+        let _importedRows = []; // เก็บ rows ที่ parse แล้ว
+        let _importedMasterData = null; // เก็บ master data ที่จะสร้างใหม่
+
+        function openImportModal() {
+            document.getElementById('import-modal').classList.remove('hidden');
+            resetImportModal();
+        }
+
+        function closeImportModal() {
+            document.getElementById('import-modal').classList.add('hidden');
+            resetImportModal();
+        }
+
+        function resetImportModal() {
+            document.getElementById('import-step-upload').classList.remove('hidden');
+            document.getElementById('import-step-preview').classList.add('hidden');
+            document.getElementById('import-back-btn').classList.add('hidden');
+            document.getElementById('import-confirm-btn').classList.add('hidden');
+            document.getElementById('csv-file-input').value = '';
+            _importedRows = [];
+            _importedMasterData = null;
+        }
+
+        function initImportUploader() {
+            const dropzone = document.getElementById('csv-dropzone');
+            const fileInput = document.getElementById('csv-file-input');
+            if (!dropzone || dropzone._initialized) return;
+            dropzone._initialized = true;
+
+            dropzone.addEventListener('click', () => fileInput.click());
+            fileInput.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (file) handleCSVFile(file);
+            });
+            dropzone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                dropzone.classList.add('border-cyan-500', 'bg-cyan-50');
+            });
+            dropzone.addEventListener('dragleave', () => {
+                dropzone.classList.remove('border-cyan-500', 'bg-cyan-50');
+            });
+            dropzone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                dropzone.classList.remove('border-cyan-500', 'bg-cyan-50');
+                const file = e.dataTransfer.files[0];
+                if (file) handleCSVFile(file);
+            });
+        }
+
+        function handleCSVFile(file) {
+            if (!file.name.toLowerCase().endsWith('.csv')) {
+                showToast("กรุณาเลือกไฟล์ .csv เท่านั้น", "error");
+                return;
+            }
+            if (file.size > 10 * 1024 * 1024) {
+                showToast("ไฟล์ใหญ่เกิน 10MB", "error");
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    parseAndPreviewCSV(e.target.result);
+                } catch (err) {
+                    showToast("อ่านไฟล์ CSV ล้มเหลว: " + err.message, "error");
+                }
+            };
+            reader.onerror = () => showToast("อ่านไฟล์ล้มเหลว", "error");
+            reader.readAsText(file, 'UTF-8');
+        }
+
+        function parseAndPreviewCSV(text) {
+            const rows = parseCSV(text);
+            if (rows.length < 2) {
+                showToast("ไฟล์ CSV ว่างเปล่าหรือมีแค่หัวตาราง", "error");
+                return;
+            }
+
+            // map header
+            const header = rows[0].map(h => h.trim());
+            const COL = {
+                recorder: findHeader(header, ['ผู้บันทึก', 'recorder']),
+                docNo: findHeader(header, ['เลขที่เอกสาร', 'docNo']),
+                refDocNo: findHeader(header, ['เลขที่เอกสารอ้างอิง', 'refDocNo']),
+                company: findHeader(header, ['บริษัท', 'company']),
+                recordDate: findHeader(header, ['วันที่ลงข้อมูล', 'วันที่ลงข้อมุล', 'recordDate']),
+                dueDate: findHeader(header, ['วันครบกำหนดจ่าย', 'dueDate']),
+                expenseType: findHeader(header, ['ประเภทงาน/รายจ่าย', 'expenseType']),
+                payeeName: findHeader(header, ['ชื่อผู้รับเงิน', 'payeeName']),
+                bankAccount: findHeader(header, ['บัญชีธนาคาร', 'bankAccount']),
+                project: findHeader(header, ['โครงการ', 'project']),
+                paymentMethod: findHeader(header, ['รูปแบบการจ่าย', 'paymentMethod']),
+                remarks: findHeader(header, ['หมายเหตุ', 'remarks']),
+                accNo: findHeader(header, ['เลขที่บัญชี', 'accNo']),
+                chequeNo: findHeader(header, ['เลขที่เช็ค', 'chequeNo']),
+                paymentDate: findHeader(header, ['วันที่จ่ายเงิน', 'paymentDate']),
+                transferAmount: findHeader(header, ['ยอดเงินโอน', 'transferAmount']),
+                fee: findHeader(header, ['ค่าธรรมเนียม', 'ค่าธรรเนียม', 'fee']),
+                paySlip: findHeader(header, ['ลิงก์เอกสารการโอน', 'paySlip']),
+                totalAmount: findHeader(header, ['ยอดเงินรวม', 'totalAmount', 'ยอดเงิน'])
+            };
+
+            // desc + amount 1-10
+            for (let i = 1; i <= 10; i++) {
+                COL[`desc${i}`] = findHeader(header, [`รายการ / Description ${i}`, `Description ${i}`]);
+                COL[`amount${i}`] = findHeader(header, [`จำนวนเงิน ${i}`, `Amount ${i}`]);
+            }
+
+            // ตรวจสอบ column ที่จำเป็น
+            if (COL.docNo === -1) {
+                showToast("ไม่พบคอลัมน์ 'เลขที่เอกสาร' ในไฟล์ CSV", "error");
+                return;
+            }
+
+            // parse rows
+            const parsed = [];
+            const masterPayees = new Map();
+            const masterProjects = new Map();
+            const masterCompanies = new Map();
+            const masterExpenseTypes = new Set();
+            const masterPaymentMethods = new Set();
+            let skipped = 0;
+
+            for (let i = 1; i < rows.length; i++) {
+                const r = rows[i];
+                if (!r || r.length === 1 && !r[0].trim()) continue;
+                const docNo = (r[COL.docNo] || '').trim();
+                if (!docNo) { skipped++; continue; }
+
+                const recorderName = parseRecorder(getCol(r, COL.recorder));
+                const payeeNameRaw = getCol(r, COL.payeeName);
+                const bankStr = getCol(r, COL.bankAccount);
+                const { bankName, accNo: derivedAccNo } = parseBankInfo(bankStr);
+                const accNo = (getCol(r, COL.accNo) || derivedAccNo || '').trim();
+
+                // ถ้ามี paySlip แต่ดูเหมือนยังไม่จ่าย (ไม่มี paymentDate) → status = Pending
+                // ถ้ามี paymentDate → status = Paid
+                const hasPayment = (getCol(r, COL.paymentDate) || '').trim() && (getCol(r, COL.paymentDate) || '').trim() !== '-';
+                const status = hasPayment ? "Paid" : "Pending Approval";
+
+                const record = {
+                    id: 'req-' + docNo,
+                    status: status,
+                    docNo: docNo,
+                    refDocNo: (getCol(r, COL.refDocNo) || '-').trim() || '-',
+                    company: (getCol(r, COL.company) || '').trim(),
+                    project: (getCol(r, COL.project) || '').trim(),
+                    recordDate: parseThaiDate(getCol(r, COL.recordDate)),
+                    dueDate: parseThaiDate(getCol(r, COL.dueDate)),
+                    recorder: recorderName,
+                    requesterRole: 'เจ้าหน้าที่การเงิน', // assume เป็น admin ตอน import
+                    expenseType: (getCol(r, COL.expenseType) || '').trim(),
+                    payeeName: parsePayeeName(payeeNameRaw),
+                    paymentMethod: (getCol(r, COL.paymentMethod) || 'โอน').trim(),
+                    bankAccount: bankName,
+                    accNo: accNo,
+                    subtotalAmount: parseThaiNumber(getCol(r, COL.totalAmount)),
+                    vatType: 'none',
+                    vatAmount: 0,
+                    whtType: '0',
+                    whtAmount: 0,
+                    totalAmount: parseThaiNumber(getCol(r, COL.totalAmount)),
+                    remarks: (getCol(r, COL.remarks) || '-').trim() || '-',
+                    reqAttachment: '-',
+                    approvedBy: hasPayment ? recorderName : '',
+                    managerComment: '',
+                    paymentDate: parseThaiDate(getCol(r, COL.paymentDate)),
+                    transferAmount: parseThaiNumber(getCol(r, COL.transferAmount)),
+                    fee: parseThaiNumber(getCol(r, COL.fee)),
+                    payerName: hasPayment ? recorderName : '',
+                    chequeNo: (getCol(r, COL.chequeNo) || '-').trim() || '-',
+                    paySlip: (getCol(r, COL.paySlip) || '-').trim() || '-'
+                };
+
+                // desc/amount 1-10
+                for (let j = 1; j <= 10; j++) {
+                    record[`desc${j}`] = (getCol(r, COL[`desc${j}`]) || '').trim();
+                    record[`amount${j}`] = parseThaiNumber(getCol(r, COL[`amount${j}`]));
+                }
+
+                parsed.push(record);
+
+                // เก็บ master data ที่ unique
+                if (payeeNameRaw && !masterPayees.has(parsePayeeName(payeeNameRaw))) {
+                    masterPayees.set(parsePayeeName(payeeNameRaw), {
+                        payee_name: parsePayeeName(payeeNameRaw),
+                        bank_name: bankName,
+                        bank_account_no: accNo
+                    });
+                }
+                if (record.project && !masterProjects.has(record.project)) {
+                    masterProjects.set(record.project, { project_name: record.project });
+                }
+                if (record.company && !masterCompanies.has(record.company)) {
+                    masterCompanies.set(record.company, { company_name: record.company });
+                }
+                if (record.expenseType) masterExpenseTypes.add(record.expenseType);
+                if (record.paymentMethod) masterPaymentMethods.add(record.paymentMethod);
+            }
+
+            _importedRows = parsed;
+            _importedMasterData = {
+                payees: Array.from(masterPayees.values()),
+                projects: Array.from(masterProjects.values()),
+                companies: Array.from(masterCompanies.values()),
+                expenseTypes: Array.from(masterExpenseTypes),
+                paymentMethods: Array.from(masterPaymentMethods)
+            };
+
+            // แสดง preview
+            showImportPreview(parsed.length, parsed.length - skipped, skipped, _importedMasterData);
+        }
+
+        // helper: หา index ของ header (รองรับ fuzzy match)
+        function findHeader(headers, candidates) {
+            for (const c of candidates) {
+                const idx = headers.findIndex(h => h.trim() === c);
+                if (idx !== -1) return idx;
+            }
+            // fuzzy: contains
+            for (const c of candidates) {
+                const idx = headers.findIndex(h => h.trim().includes(c));
+                if (idx !== -1) return idx;
+            }
+            return -1;
+        }
+
+        function getCol(row, idx) {
+            return idx >= 0 && idx < row.length ? row[idx] : '';
+        }
+
+        function showImportPreview(total, valid, skip, master) {
+            document.getElementById('import-stat-total').innerText = total.toLocaleString();
+            document.getElementById('import-stat-valid').innerText = valid.toLocaleString();
+            document.getElementById('stat-skip' in document ? 'stat-skip' : 'import-stat-skip').innerText = skip.toLocaleString();
+            document.getElementById('import-stat-skip').innerText = skip.toLocaleString();
+            document.getElementById('import-stat-new').innerText = (
+                master.payees.length + master.projects.length + master.companies.length +
+                master.expenseTypes.length + master.paymentMethods.length
+            ).toLocaleString();
+
+            // Master data badges
+            const masterDiv = document.getElementById('import-master-preview');
+            masterDiv.innerHTML = '';
+            const sections = [
+                { label: 'ผู้รับเงิน', count: master.payees.length, color: 'bg-emerald-100 text-emerald-800' },
+                { label: 'โครงการ', count: master.projects.length, color: 'bg-indigo-100 text-indigo-800' },
+                { label: 'บริษัท', count: master.companies.length, color: 'bg-amber-100 text-amber-800' },
+                { label: 'ประเภทรายจ่าย', count: master.expenseTypes.length, color: 'bg-purple-100 text-purple-800' },
+                { label: 'รูปแบบจ่าย', count: master.paymentMethods.length, color: 'bg-cyan-100 text-cyan-800' }
+            ];
+            sections.forEach(s => {
+                const div = document.createElement('div');
+                div.className = `${s.color} rounded px-2 py-1 flex items-center justify-between`;
+                div.innerHTML = `<span class="font-semibold">${s.label}</span><span class="font-black">+${s.count}</span>`;
+                masterDiv.appendChild(div);
+            });
+
+            // Sample rows
+            const tbody = document.getElementById('import-sample-rows');
+            tbody.innerHTML = '';
+            _importedRows.slice(0, 5).forEach((r, i) => {
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-slate-50';
+                const statusBadge = r.status === 'Paid'
+                    ? '<span class="px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[9px] font-bold">จ่ายแล้ว</span>'
+                    : '<span class="px-1.5 py-0.5 rounded-full bg-orange-100 text-orange-800 text-[9px] font-bold">รออนุมัติ</span>';
+                tr.innerHTML = `
+                    <td class="py-1.5 px-2 text-slate-400">${i + 1}</td>
+                    <td class="py-1.5 px-2 font-mono font-bold">${r.docNo}</td>
+                    <td class="py-1.5 px-2">${r.recordDate || '-'}</td>
+                    <td class="py-1.5 px-2 truncate max-w-[200px]">${r.payeeName || '-'}</td>
+                    <td class="py-1.5 px-2 text-right font-bold">${r.totalAmount.toLocaleString('th-TH', {minimumFractionDigits: 2})}</td>
+                    <td class="py-1.5 px-2 text-center">${statusBadge}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            // เปลี่ยน step
+            document.getElementById('import-step-upload').classList.add('hidden');
+            document.getElementById('import-step-preview').classList.remove('hidden');
+            document.getElementById('import-back-btn').classList.remove('hidden');
+            document.getElementById('import-confirm-btn').classList.remove('hidden');
+        }
+
+        async function confirmImport() {
+            if (!_importedRows.length) {
+                showToast("ไม่มีข้อมูลให้นำเข้า", "warning");
+                return;
+            }
+            const btn = document.getElementById('import-confirm-btn');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i> กำลังนำเข้า...';
+
+            try {
+                // เพิ่ม project_code ให้ project (ถ้าไม่มี)
+                _importedMasterData.projects = _importedMasterData.projects.map((p, i) => ({
+                    project_code: 'P-' + String(i + 1).padStart(3, '0'),
+                    project_name: p.project_name
+                }));
+                _importedMasterData.companies = _importedMasterData.companies.map((c, i) => ({
+                    company_id: c.company_name.substring(0, 10).toUpperCase().replace(/\s/g, '_') || 'CO_' + (i + 1),
+                    company_name: c.company_name
+                }));
+                _importedMasterData.payees = _importedMasterData.payees.map((p, i) => ({
+                    payee_id: 'PAY-' + String(i + 1).padStart(4, '0'),
+                    ...p
+                }));
+                _importedMasterData.expenseTypes = _importedMasterData.expenseTypes.map(t => ({
+                    expense_type: t,
+                    status: 'Active'
+                }));
+                _importedMasterData.paymentMethods = _importedMasterData.paymentMethods.map(t => ({
+                    payment_type: t,
+                    status: 'Active'
+                }));
+
+                const result = await apiPostRequest("import_records", {
+                    records: _importedRows,
+                    masterData: _importedMasterData
+                });
+
+                if (result.status === "success") {
+                    showToast(result.message, "success");
+                    closeImportModal();
+                    await refreshDataInPlace();
+                } else {
+                    showToast("นำเข้าล้มเหลว: " + result.message, "error");
+                }
+            } catch (err) {
+                showToast("เกิดข้อผิดพลาด: " + err.message, "error");
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fa-solid fa-file-import mr-1"></i> ยืนยันนำเข้า';
+            }
         }
 
         function handleLoginSubmit(e) {
