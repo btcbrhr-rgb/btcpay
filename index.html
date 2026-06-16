@@ -545,7 +545,7 @@
                         <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
                             <h3 class="text-sm font-bold text-slate-900 mb-4 flex items-center gap-1.5">
                                 <span class="w-2.5 h-2.5 bg-indigo-600 rounded-full"></span>
-                                เลือกเอกสารใบตั้งเบิกที่ได้รับการอนุมัติแล้วเพื่อคีย์จ่ายเงิน
+                                เลือกรายการที่ยังไม่บันทึกการจ่ายเงินเพื่อคีย์จ่ายเงิน
                             </h3>
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
@@ -553,7 +553,7 @@
                                     <input type="text" id="pay-search-input" oninput="filterPendingDropdown()" class="w-full px-3 py-2 text-sm bg-slate-50 border rounded-lg focus:outline-none" placeholder="พิมพ์ชื่อโครงการหรือข้อมูลค้นหา...">
                                 </div>
                                 <div>
-                                    <label class="block text-xs font-semibold text-slate-600 mb-1.5">เลือกบิลอนุมัติพร้อมชำระ (Approved Requisitions)</label>
+                                    <label class="block text-xs font-semibold text-slate-600 mb-1.5">เลือกรายการค้างจ่าย (ยังไม่จ่ายเงิน)</label>
                                     <select id="pending-records-select" onchange="selectPendingRecord(this.value)" class="w-full px-3 py-2 text-sm bg-slate-50 border-2 border-indigo-100 rounded-lg focus:outline-none"></select>
                                 </div>
                             </div>
@@ -2612,13 +2612,23 @@
         function buildPendingClaimsDropdown() {
             const selectEl = document.getElementById('pending-records-select');
             if (!selectEl) return;
-            selectEl.innerHTML = '<option value="">-- กรุณาเลือกบิลอนุมัติพร้อมชำระเงิน --</option>';
+            selectEl.innerHTML = '<option value="">-- กรุณาเลือกรายการค้างจ่าย --</option>';
 
-            const approvedRecords = records.filter(r => r.status === 'Approved');
-            approvedRecords.forEach(r => {
+            // แสดงรายการที่ "ยังไม่บันทึกการจ่ายเงิน" เท่านั้น:
+            // - ตัด Paid (จ่ายแล้ว) ออก
+            // - ตัด Rejected (ปฏิเสธ) ออก
+            // - ให้ Pending Approval / Approved ขึ้นได้ เพื่อให้ผู้ใช้คีย์จ่ายได้ทันที
+            const pendingPayRecords = getAuthorizedRecords().filter(r => r.status !== 'Paid' && r.status !== 'Rejected');
+            if (pendingPayRecords.length === 0) {
+                selectEl.innerHTML = '<option value="">(ไม่มีรายการค้างจ่ายในขณะนี้)</option>';
+                const formScreen = document.getElementById('payment-form');
+                if (formScreen) formScreen.classList.add('hidden');
+                return;
+            }
+            pendingPayRecords.forEach(r => {
                 const opt = document.createElement('option');
                 opt.value = r.id;
-                opt.innerText = `[${r.docNo}] ยอด ฿${safeNum(r.totalAmount).toLocaleString('th-TH')} - ผู้รับ: ${r.payeeName}`;
+                opt.innerText = `[${r.docNo}] (${r.status}) ยอด ฿${safeNum(r.totalAmount).toLocaleString('th-TH')} - ผู้รับ: ${r.payeeName}`;
                 selectEl.appendChild(opt);
             });
         }
